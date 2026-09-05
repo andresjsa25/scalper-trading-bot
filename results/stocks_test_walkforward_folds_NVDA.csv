@@ -1,0 +1,5 @@
+symbol,fold_start,fold_end,chosen_percentile,n_trades
+NVDA,2026-07-12,2026-07-27,0,3
+NVDA,2026-07-27,2026-08-11,0,4
+NVDA,2026-08-11,2026-08-26,0,2
+NVDA,2026-08-26,2026-09-05,0,5

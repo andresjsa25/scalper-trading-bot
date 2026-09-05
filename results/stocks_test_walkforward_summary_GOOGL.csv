@@ -1,0 +1,2 @@
+num_trades,win_rate,profit_factor,total_return_pct,max_drawdown_pct,avg_r_multiple,final_capital,total_fees,symbol,oos_days,trades_per_day,n_folds,racha_perdidas_max,racha_ganancias_max
+15,66.66666666666666,1.7246736189359217,11.707641715425279,-9.586462789569856,0.391536924731955,1117.0764171542528,54.34927570261699,GOOGL,55.0,0.2727272727272727,4,3,5

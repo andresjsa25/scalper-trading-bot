@@ -1,0 +1,2 @@
+num_trades,win_rate,profit_factor,total_return_pct,max_drawdown_pct,avg_r_multiple,final_capital,total_fees,symbol,oos_days,trades_per_day,n_folds
+18,38.88888888888889,0.708274692321327,-7.652585712081736,-14.385396426037422,-0.20194683245922865,923.4741428791826,93.10997279944914,NASDAQ100,55.0,0.32727272727272727,4

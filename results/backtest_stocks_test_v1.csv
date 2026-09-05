@@ -1,0 +1,5 @@
+activo,rango_15m,dias_reales,setups_generados,trades_ejecutados,trades_por_dia,win_rate_%,profit_factor,roi_%,max_drawdown_%,r_promedio,racha_perdidas_max,racha_ganancias_max,comisiones_totales_usdt,capital_final_usdt
+NASDAQ100,2026-05-28 -> 2026-09-05,100.0,35,34,0.34,47.1,0.98,-0.88,-18.9,0.01,7,4,157.26,991.15
+GOOGL,2026-05-28 -> 2026-09-05,100.0,39,36,0.36,52.8,1.27,11.73,-16.16,0.17,7,4,122.52,1117.25
+META,2026-05-28 -> 2026-09-05,100.0,41,40,0.4,67.5,3.06,75.46,-6.3,0.73,3,5,187.28,1754.61
+NVDA,2026-05-28 -> 2026-09-05,100.0,31,29,0.29,69.0,2.32,39.16,-7.13,0.59,3,7,113.48,1391.65

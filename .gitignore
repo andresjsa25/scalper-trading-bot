@@ -1,0 +1,13 @@
+.env
+data/
+results/*.png
+results/live_trading/
+logs/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# --- Metadata local de herramientas de dev, no parte del proyecto ---
+.claude/
+.atl/

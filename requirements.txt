@@ -1,0 +1,11 @@
+# Versiones sin fijar a propósito: el bot corre sobre el Python de Windows
+# del usuario, no sobre este entorno de desarrollo — antes de desplegar en
+# una máquina nueva, correr `pip freeze > requirements.txt` una vez que
+# todo esté instalado y funcionando, para dejar versiones exactas fijadas.
+ccxt
+pandas
+numpy
+matplotlib
+mplfinance
+python-dotenv
+duka

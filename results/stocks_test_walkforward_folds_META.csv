@@ -1,0 +1,5 @@
+symbol,fold_start,fold_end,chosen_percentile,n_trades
+META,2026-07-12,2026-07-27,0,6
+META,2026-07-27,2026-08-11,0,8
+META,2026-08-11,2026-08-26,0,3
+META,2026-08-26,2026-09-05,0,4
