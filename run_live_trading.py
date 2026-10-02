@@ -145,9 +145,6 @@ V10_LIVE_CONFIG = {
 }
 
 ALL_SYMBOLS = sorted(set(list(V1_LIVE_CONFIG.keys()) + list(V5_LIVE_CONFIG.keys()) + list(V10_LIVE_CONFIG.keys())))
-LEVERAGE_BY_SYMBOL = {s: V1_LEVERAGE for s in V1_LIVE_CONFIG}
-LEVERAGE_BY_SYMBOL.update({s: V5_LEVERAGE for s in V5_LIVE_CONFIG})
-LEVERAGE_BY_SYMBOL.update({s: V10_LEVERAGE for s in V10_LIVE_CONFIG})
 
 
 def process_new_setups(exchange, symbol_setups, state, risk_base_capital, available_capital,
@@ -163,6 +160,16 @@ def process_new_setups(exchange, symbol_setups, state, risk_base_capital, availa
         if current_open_count >= config.MAX_CONCURRENT_TRADES:
             lt.log(f"  [salteada] {setup.symbol} {setup.strategy}: tope de "
                    f"{config.MAX_CONCURRENT_TRADES} operaciones simultáneas alcanzado.")
+            continue
+
+        # Apalancamiento de ESTA estrategia, fijado justo antes de abrir. Un
+        # mismo símbolo puede estar en dos estrategias con apalancamiento
+        # distinto (GOOGL: V1 15x / V5 50x); fijarlo una vez por ciclo desde un
+        # mapa por símbolo dejaba GOOGL a 50x para V1 (13 trades, sep 2026).
+        # Si BingX no lo acepta, no se abre la orden.
+        if not lt.set_leverage_strict(exchange, setup.symbol, leverage):
+            lt.log(f"  [salteada] {setup.symbol} {setup.strategy}: no se pudo fijar "
+                   f"{leverage}x en BingX -- no se abre sin el apalancamiento previsto.")
             continue
 
         sized = lt.compute_valid_position_size(
@@ -206,7 +213,8 @@ def main():
         return
 
     exchange = lt.get_exchange()
-    lt.ensure_leverage(exchange, ALL_SYMBOLS, leverage=LEVERAGE_BY_SYMBOL)
+    # El apalancamiento se fija por orden (ver process_new_setups), ya no por
+    # ciclo y símbolo: no hay un único apalancamiento por símbolo.
 
     balance = exchange.fetch_balance()
     free_balance = balance.get("USDT", {}).get("free", 0) or 0

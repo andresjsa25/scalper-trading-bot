@@ -101,6 +101,36 @@ def ensure_leverage(exchange, symbols, leverage=config.LEVERAGE):
                 log(f"[!] No se pudo fijar apalancamiento para {symbol} ({side}): {e}")
 
 
+def set_leverage_strict(exchange, symbol, leverage, retries=3, sleep=time.sleep) -> bool:
+    """
+    Fija el apalancamiento de `symbol` (LONG y SHORT) y devuelve True solo si
+    BingX lo aceptó en los DOS lados. Se llama justo antes de abrir una orden,
+    con el apalancamiento de la estrategia que generó la señal.
+
+    Si falla (ej. "Insufficient margin" por posiciones manuales en la cuenta
+    compartida), devuelve False y quien llama NO debe abrir la orden: el
+    tamaño se calcula asumiendo `leverage`, y operar con otro apalancamiento
+    deja la liquidación más cerca de lo que el bot cree.
+    """
+    for side in ["LONG", "SHORT"]:
+        last_error = None
+        for attempt in range(retries):
+            try:
+                exchange.set_leverage(leverage, symbol, params={"side": side})
+                last_error = None
+                break
+            except Exception as e:
+                last_error = e
+                if attempt < retries - 1:
+                    sleep(1)
+        if last_error is not None:
+            log(f"[!] No se pudo fijar apalancamiento {leverage}x para {symbol} ({side}) "
+                f"tras {retries} intentos: {last_error}")
+            return False
+        log(f"Apalancamiento {leverage}x confirmado para {symbol} ({side})")
+    return True
+
+
 def _load_state() -> dict:
     if os.path.exists(LIVE_STATE_PATH):
         with open(LIVE_STATE_PATH, "r") as f:
