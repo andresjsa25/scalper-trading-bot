@@ -36,6 +36,20 @@ Ciclo de trading EN VIVO con dinero real en BingX.
     bastante más seguido. Si V1 ya tiene una posición abierta en un símbolo,
     V10 no abre una segunda ahí (y viceversa) -- ver V10_LIVE_CONFIG.
 
+CAMBIOS 2026-10-03 (análisis de ventanas horarias, 16 activos, 10 meses de
+datos, simulación pesimista con costos; ver docs/analisis_ventanas_2026-10.md):
+  - V5 APAGADO (V5_LIVE_CONFIG vacío): R medio -0,07 por trade, PF 0,87 y
+    solo 33% de meses positivos fuera y dentro de muestra.
+  - V1 solo en ventanas que se sostuvieron en los 3 períodos: apertura de NY
+    (13:30-16:00 UTC) para todos; además la noche (21:00-24:00 UTC) para
+    cripto y commodities. Londres y Asia se sacan (Londres 8-10: R 0,12 y
+    -0,04 en jul-oct). Las acciones/índices solo operan en NY.
+  - V10 solo en Londres (08:00-13:30 UTC, hora de entrada = cierre de la
+    vela de señal): R 0,22, PF 1,40, positivo en los 3 períodos. Fuera de esa
+    ventana V10 rinde R 0,10 / PF 1,17 y en Asia es negativo.
+  - Riesgo por operación 1% (LIVE_RISK_PCT) mientras se mide el R real en
+    vivo contra el del backtest (0,54 para V1 en estas ventanas).
+
 Capital compartido entre las 3 estrategias, topeado en config.MAX_CAPITAL_USDT,
 mismos topes de riesgo de portafolio (30% / 10 operaciones simultáneas).
 
@@ -59,6 +73,32 @@ import live_trading as lt
 V1_LEVERAGE = 15
 V5_LEVERAGE = 50
 V10_LEVERAGE = 15  # mismo config.LEVERAGE que se usó en todo el backtesting de V10
+
+# Riesgo por operación en vivo (fracción del balance), pisa setup.risk_pct.
+# 1% (antes 2%) hasta confirmar en vivo el R medio de las ventanas nuevas.
+LIVE_RISK_PCT = 0.01
+
+# Ventanas horarias UTC en minutos del día, [inicio, fin). Sobre signal_datetime
+# (vela donde se llena la entrada) más el offset de la estrategia.
+NY_OPEN_WINDOW = (13 * 60 + 30, 16 * 60)
+NIGHT_WINDOW = (21 * 60, 24 * 60)
+LONDON_WINDOW = (8 * 60, 13 * 60 + 30)
+V1_WINDOWS_STOCKS = [NY_OPEN_WINDOW]
+V1_WINDOWS_OTHER = [NY_OPEN_WINDOW, NIGHT_WINDOW]
+V10_WINDOWS = [LONDON_WINDOW]
+V10_ENTRY_OFFSET_MIN = 60  # V10 entra al cierre de la vela de 1h de la señal
+
+
+def in_windows(ts, windows, offset_minutes=0):
+    """True si ts (+offset) cae en alguna ventana [inicio, fin) en UTC. Sin
+    ventanas (None) no filtra."""
+    if windows is None:
+        return True
+    t = pd.Timestamp(ts)
+    t = t.tz_localize("UTC") if t.tzinfo is None else t.tz_convert("UTC")
+    t = t + pd.Timedelta(minutes=offset_minutes)
+    m = t.hour * 60 + t.minute
+    return any(a <= m < b for a, b in windows)
 
 V1_LIVE_CONFIG = {
     "NCCOXAG2USD/USDT:USDT": {"percentile": 0, "use_trend_filter": False, "use_session_filter": True,
@@ -108,6 +148,20 @@ V1_LIVE_CONFIG = {
     "NCSKNVDA2USD/USDT:USDT": {"percentile": 0, "use_trend_filter": False, "use_session_filter": True,
                                 "require_regime": None, "tp_rr_ratio": 2.3, "ema_filter": "ema_only"},
 }
+# Ventanas de V1 en vivo (2026-10-03), aparte de V1_LIVE_CONFIG para no alterar
+# los scripts de análisis que importan ese dict. En main() el filtro de sesión
+# interno de generate_setups se apaga y estas ventanas se aplican sobre
+# signal_datetime (vela donde se llena la entrada).
+_V1_STOCK_LIKE = {
+    "NCSISP5002USD/USDT:USDT", "NCSKAAPL2USD/USDT:USDT", "NCSKGOOGL2USD/USDT:USDT",
+    "NCSKMETA2USD/USDT:USDT", "NCSKNVDA2USD/USDT:USDT", "NCSKAMZN2USD/USDT:USDT",
+    "NCSINASDAQ1002USD/USDT:USDT",
+}
+V1_WINDOWS_BY_SYMBOL = {
+    sym: (V1_WINDOWS_STOCKS if sym in _V1_STOCK_LIKE else V1_WINDOWS_OTHER)
+    for sym in V1_LIVE_CONFIG
+}
+
 # GOOGL sumado sep 2026 -- único activo donde V5 (Fibonacci) también dio
 # resultado propio en la comparación de 3 estrategias (PF 1.18 en 240 días,
 # de fábrica sin calibrar) además de V1 -- el usuario pidió correr ambas acá.
@@ -115,9 +169,9 @@ V1_LIVE_CONFIG = {
 # exigido): no hay una versión ya calibrada de V5 para acciones, a
 # diferencia de V1. Si el resultado en vivo no convence, calibrar por
 # separado antes de asumir que esto es definitivo.
-V5_LIVE_CONFIG = {
-    "NCSKGOOGL2USD/USDT:USDT": {"percentile": 0, "min_rr_ratio": 0},
-}
+# APAGADO 2026-10-03: V5 no tiene ventaja fuera de muestra (PF 0,87). Config
+# anterior: {"NCSKGOOGL2USD/USDT:USDT": {"percentile": 0, "min_rr_ratio": 0}}
+V5_LIVE_CONFIG = {}
 
 # --- V10 (Rebote de Bollinger 1h + RSI 4h) -- agregada 2026-08-25 como SEGUNDA
 # estrategia, en paralelo a V1, solo para los 6 cripto nativos que ya opera V1
@@ -173,7 +227,7 @@ def process_new_setups(exchange, symbol_setups, state, risk_base_capital, availa
             continue
 
         sized = lt.compute_valid_position_size(
-            exchange, setup.symbol, risk_base_capital, setup.risk_pct,
+            exchange, setup.symbol, risk_base_capital, LIVE_RISK_PCT,
             setup.entry_price_target, setup.stop_price, leverage,
             available_capital=available_capital,
         )
@@ -281,9 +335,11 @@ def main():
             symbol_setups = generate_setups_v1(
                 symbol, df_context, df_entry,
                 min_swing_percentile=cfg["percentile"], use_trend_filter=cfg["use_trend_filter"],
-                use_session_filter=cfg["use_session_filter"], require_regime=cfg["require_regime"],
+                use_session_filter=False, require_regime=cfg["require_regime"],
             )
             symbol_setups = apply_entry_filter(symbol_setups, df_entry, cfg["ema_filter"])
+            symbol_setups = [s for s in symbol_setups
+                             if in_windows(s.signal_datetime, V1_WINDOWS_BY_SYMBOL[symbol])]
             last_processed = state["last_processed_signal"].get(symbol)
             last_processed_ts = pd.Timestamp(last_processed) if last_processed else pd.Timestamp.now(tz="UTC")
             genuinely_new = sorted(
@@ -349,6 +405,8 @@ def main():
             df_context = update_live_data(exchange, symbol, "4h")
 
             symbol_setups = generate_setups_v10(symbol, df_context, df_entry, **cfg)
+            symbol_setups = [s for s in symbol_setups
+                             if in_windows(s.signal_datetime, V10_WINDOWS, V10_ENTRY_OFFSET_MIN)]
             # Clave de estado con prefijo "v10:" -- V1 ya usa el símbolo pelado
             # como clave de last_processed_signal; si V10 usara la misma clave
             # para un símbolo que V1 también opera (son los mismos 6), una
