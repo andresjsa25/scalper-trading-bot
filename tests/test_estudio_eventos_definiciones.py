@@ -84,6 +84,14 @@ class TestFvg:
         df = _fvg_con(RELLENO, TOCA)  # RELLENO entra en la zona antes de la senal
         assert fvg_en(df, 4, "long") is None
 
+    def test_relleno_que_toca_solo_el_borde_superior_no_rellena(self):
+        borde = (102.0, 102.5, 101.0, 101.5)  # low = borde superior (101.0): no cruza el interior
+        assert fvg_en(_fvg_con(borde, TOCA), 4, "long") == (100.5, 101.0)
+
+    def test_relleno_que_entra_un_poco_en_la_zona_si_rellena(self):
+        entra_poco = (102.0, 102.5, 100.95, 101.5)  # low 100.95 < 101.0 y high > 100.5: cruza el interior
+        assert fvg_en(_fvg_con(entra_poco, TOCA), 4, "long") is None
+
     def test_fvg_solo_cuenta_como_tocado_si_la_vela_de_senal_entra(self):
         assert fvg_en(_fvg_con(ARRIBA), 3, "long") is None
         assert fvg_en(_fvg_con(TOCA), 3, "long") == (100.5, 101.0)
