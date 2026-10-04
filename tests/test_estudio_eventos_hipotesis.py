@@ -91,7 +91,7 @@ def _h2_filas(volumen_senal=300.0, sin_hueco=False, tendencia_previa=False, bajo
         (P - 0.5, P - 0.4, P - 1.7, P - 1.5),             # a (dip)
         (P - 1.5, P - 0.6, P - 1.6, P - 0.7),             # b
         (P - 0.7, P + 0.0, P + c_low, P - 0.1),           # c: low P-0.2 > high(a) = P-0.4
-        (P - 0.1, P + 0.1, P - 0.15, P - 0.12),           # d: no entra en la zona
+        (P - 0.1, P + 0.1, P - (0.65 if sin_hueco else 0.15), P - 0.12),  # d: no entra en la zona; sin_hueco cierra b-d
         (P - 0.3, P - 0.25, P - bajo_senal, P - 0.35),    # senal: toca la zona y perfora la banda
     ]
     return base + tramo, volumen_senal
