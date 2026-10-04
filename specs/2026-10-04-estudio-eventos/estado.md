@@ -1,6 +1,6 @@
 # Estado: estudio de eventos de patrones
 
-Fase actual: fase 0 corregida con decisiones de Andrés (ver entrada Constructor 2026-10-04 "corrección"). Fases 1 y 2 NO ejecutadas. pytest: 89 pasan. Pendiente: revisión del Revisor sobre la corrección; decidir la fase 1 (definiciones de evaluación) antes de correrla.
+Fase actual: lista para merge (PR #8). Fase 0 construida y revisada (2 vueltas, aprobada). Fases 1 y 2 NO ejecutadas; requieren OK de Andrés. pytest: 89 pasan. Pendientes antes de fase 1: ver registro de revisión vuelta 2.
 
 ## Registro
 
@@ -52,3 +52,5 @@ Fase actual: fase 0 corregida con decisiones de Andrés (ver entrada Constructor
   Ideas para el Proponente: (i) decidir si el relleno de velas previas usa solapamiento estricto también (hoy inclusivo; afecta H1, H2 y H3 de forma leve); (ii) `fase0` debería escribir las celdas en cero para que el registro tenga 76 filas; (iii) la línea de corrección en `docs/estudio-eventos-frecuencia.md` se pierde si se vuelve a generar el archivo (el script lo sobrescribe); conviene moverla al registro.
 
 - 2026-10-04 · Revisor (vuelta 2) · Veredicto: Aprobar. Altos: ninguno. Verificado: 75 celdas recalculadas + la celda de cero coinciden con el registro; 89 pytest; protegidos sin cambios; decisiones de Andrés aplicadas en código. Medios abiertos, no bloquean la PR; deben resolverse antes de fase 1: (a) el bootstrap mide la media de eventos, no la diferencia contra el azar que pide la spec §5 (`muestreo.py`); decidir si se cambia el estadístico o se aprueba la desviación; (b) la tabla 2 de frecuencia no tiene hipótesis, versión, temporalidad y sentido por mes (spec §5); (c) la tabla 1 no tiene la celda de cero eventos (H1 con_estructura_mayor 4h long), aunque sí está en el registro. Bajos abiertos: (d) vigencia del FVG busca j en [i-23, i-1], la spec dice "últimas 24 velas" (incluiría i); afecta solo H3 (`patrones.py:38`), decisión a confirmar por Andrés; (e) relleno de velas previas inclusivo mientras la señal es de toque estricto (`patrones.py:49`), decidir por Andrés; (f) `docs/memoria.md` no existe (no pedido en esta tarea).
+
+- 2026-10-04 · Publicación · PR #8 abierto contra main (rama `estudio-eventos`, mergeable). CI: el repo no tiene workflows (`.github/workflows` no existe) y el PR no reporta checks. `npx tsc --noEmit` y `npm test` no aplican (repo Python, sin `package.json`/`tsconfig.json`); se reemplazaron por `python -m pytest -q` (89 pasan). Merge lo hace Andrés.
