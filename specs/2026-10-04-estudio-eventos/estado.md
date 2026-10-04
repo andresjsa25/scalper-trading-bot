@@ -1,6 +1,6 @@
 # Estado: estudio de eventos de patrones
 
-Fase actual: lista para merge (PR #9). Ajustes aprobados en revisión vuelta 4. Fases 1 y 2 NO ejecutadas. pytest: 95 pasan. Pendientes antes de fase 1: diferencia contra referencia al azar, decisión sobre XAUT.
+Fase actual: lista para merge (PR #10). Diferencia contra referencia al azar implementada y testeada con datos sintéticos; fases 1 y 2 NO ejecutadas. pytest: 104 pasan. Pendientes antes de fase 1: unidad de celda y alcance de exclusión (decisiones de Andrés), resumen con excluidos, sentido por argumento.
 
 ## Registro
 
@@ -94,3 +94,5 @@ Fase actual: lista para merge (PR #9). Ajustes aprobados en revisión vuelta 4. 
 - 2026-10-04 · Andrés · Referencia al azar: las velas de eventos suprimidos por dedup NO se excluyen de las candidatas; solo se excluyen los eventos contados (se mantiene lo implementado). Costo base 0,11% ida y vuelta; sensibilidad 0,08% y 0,14% (decisiones de Andrés).
 
 - 2026-10-04 · Revisor (vuelta 5, rama `estudio-eventos-diferencia`) · Veredicto: Aprobar. Altos: ninguno. Medios abiertos, resolver antes de fase 1: (1) `resumen_celdas` agrupa por símbolo y la spec declara 76 celdas agregadas (`diferencia.py:79,88`); decisión de Andrés sobre la unidad de celda. (2) el resumen no cuenta excluidos ni motivos (`diferencia.py:87-92`); corregir. (3) alcance de la exclusión de candidatas (solo la celda o todas las hipótesis); la spec no lo fija (`diferencia.py:50,54`); decisión de Andrés. (4) el sentido de las velas es una columna que el llamador debe armar (`muestreo.py:32-34`); pasar el sentido como argumento o validarlo. Bajos: derivación de costos de sensibilidad no está en el protocolo v1 (`spec.md:82`), corregir la frase y anotar la derivación en el anexo; máximos a favor y en contra no implementados (fase 1); recálculo de retornos por evento (`diferencia.py:53`). Verificado: pytest 104 pasan; protegidos sin cambios; registro solo agregar; sin ejecuciones sobre E, C1 ni C2, fase 1 ni fase 2.
+
+- 2026-10-04 · Publicación · PR #10 abierto contra main (rama `estudio-eventos-diferencia`, mergeable). CI: sin workflows y sin checks reportados. `tsc`/`npm test` no aplican (repo Python); se usó `python -m pytest -q` (104 pasan). Merge lo hace Andrés.
