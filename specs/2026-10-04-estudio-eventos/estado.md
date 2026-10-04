@@ -1,6 +1,6 @@
 # Estado: estudio de eventos de patrones
 
-Fase actual: lista para merge (PR #11). Resumen por celda, excluidos por motivo, máximos y detalle por símbolo implementados y probados; fases 1 y 2 NO ejecutadas. pytest: 115 pasan. Pendiente antes de fase 1: script de fase 1 y anexo de la spec (spec.md:139) con OK de Andrés.
+Fase actual: lista para revisar (script de fase 1 en PR apilado, NO ejecutado). Fases 1 y 2 sin correr; requieren OK de Andrés (--aprobada-por). pytest: 122 pasan.
 
 ## Registro
 
