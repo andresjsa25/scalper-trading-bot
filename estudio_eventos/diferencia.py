@@ -2,14 +2,15 @@
 import numpy as np
 import pandas as pd
 
+from estudio_eventos.fase0 import PRINCIPAL, celdas_declaradas
 from estudio_eventos.indicadores import atr
 from estudio_eventos.muestreo import bootstrap_dia, referencia_azar
 
 HORIZONTE = 8
 
 
-def _retornos(df: pd.DataFrame, sentido: str, costo: float) -> np.ndarray:
-    """ret_atr de cada posicion i; NaN si falta la vela i+1, la i+8 o el ATR."""
+def _retornos(df: pd.DataFrame, sentido: str, costo: float, atr_serie: pd.Series | None = None) -> np.ndarray:
+    """ret_atr de cada posicion i; NaN si falta la vela i+1, la i+8 o el ATR. atr_serie: ATR14 ya calculado (si no, se calcula)."""
     s = 1.0 if sentido == "long" else -1.0
     n = len(df)
     opens = df["open"].to_numpy(dtype=float)
@@ -19,7 +20,8 @@ def _retornos(df: pd.DataFrame, sentido: str, costo: float) -> np.ndarray:
     salida = np.full(n, np.nan)
     salida[: n - HORIZONTE] = closes[HORIZONTE:]
     with np.errstate(invalid="ignore", divide="ignore"):
-        return (s * (salida - entrada) - costo * entrada) / atr(df).to_numpy(dtype=float)
+        a = atr(df) if atr_serie is None else atr_serie
+        return (s * (salida - entrada) - costo * entrada) / a.to_numpy(dtype=float)
 
 
 def retorno_atr(df: pd.DataFrame, i: int, sentido: str, costo: float) -> float:
@@ -48,15 +50,17 @@ def diferencias(df: pd.DataFrame, eventos: pd.DataFrame, costo: float, semilla: 
     Un evento excluido (sin vela +8, o con menos de n candidatas validas) queda en el resultado con excluido=True.
     """
     n_velas = len(df)
+    atr14 = atr(df)  # una vez por df: _retornos y maximos_atr lo reciben
     posiciones = eventos["pos"].to_numpy(dtype=int)
     marcadas = np.zeros(n_velas, dtype=bool)
     marcadas[posiciones] = True  # velas con evento: no son candidatas
     filas = []
     for pos, sentido in zip(posiciones, eventos["sentido"].to_numpy()):
-        ret = _retornos(df, sentido, costo)
+        ret = _retornos(df, sentido, costo, atr14)
         candidatas_excluidas = marcadas | ~np.isfinite(ret)
+        mfe, mae = maximos_atr(df, int(pos), sentido, atr14)
         fila = {"pos": int(pos), "sentido": sentido, "dia": df.index[pos].strftime("%Y-%m-%d"),
-                "diferencia": np.nan, "excluido": False, "motivo": ""}
+                "diferencia": np.nan, "excluido": False, "motivo": "", "mfe": mfe, "mae": mae}
         if pos + HORIZONTE >= n_velas:
             fila.update(excluido=True, motivo="sin vela +8")
         elif not np.isfinite(ret[pos]):
@@ -68,7 +72,7 @@ def diferencias(df: pd.DataFrame, eventos: pd.DataFrame, costo: float, semilla: 
             else:
                 fila["diferencia"] = float(ret[pos] - ret[cands].mean())
         filas.append(fila)
-    return pd.DataFrame(filas, columns=["pos", "sentido", "dia", "diferencia", "excluido", "motivo"])
+    return pd.DataFrame(filas, columns=["pos", "sentido", "dia", "diferencia", "excluido", "motivo", "mfe", "mae"])
 
 
 def intervalo_diferencia(res: pd.DataFrame, semilla: int = 0) -> tuple:
@@ -94,3 +98,121 @@ def resumen_celdas(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
         filas.append({**dict(zip(COLUMNAS_CELDA, clave)), "n": n,
                       "diferencia_media": media, "cota_inferior": lo, "cota_superior": hi})
     return pd.DataFrame(filas, columns=COLUMNAS_CELDA + ["n", "diferencia_media", "cota_inferior", "cota_superior"])
+
+
+def maximos_atr(df: pd.DataFrame, i: int, sentido: str, atr_serie: pd.Series | None = None) -> tuple:
+    """(mfe, mae) descriptivos en unidades de ATR14[i], horizonte i+1..i+8, sin costos, entrada = open[i+1].
+
+    long:  mfe = (max(high[i+1..i+8]) - open[i+1]) / ATR14[i];  mae = (open[i+1] - min(low[i+1..i+8])) / ATR14[i]
+    short: mfe = (open[i+1] - min(low[i+1..i+8])) / ATR14[i];  mae = (max(high[i+1..i+8]) - open[i+1]) / ATR14[i]
+    mae positivo = en contra. Sin vela i+8 o sin ATR: (NaN, NaN). El motivo "datos faltantes" lo asigna el llamador.
+    """
+    if i + HORIZONTE >= len(df):
+        return (np.nan, np.nan)
+    a = float((atr(df) if atr_serie is None else atr_serie).iloc[i])
+    if not np.isfinite(a) or a <= 0:
+        return (np.nan, np.nan)
+    entrada = float(df["open"].iloc[i + 1])
+    maximo = float(df["high"].iloc[i + 1: i + 1 + HORIZONTE].max())
+    minimo = float(df["low"].iloc[i + 1: i + 1 + HORIZONTE].min())
+    if sentido == "long":
+        return ((maximo - entrada) / a, (entrada - minimo) / a)
+    return ((entrada - minimo) / a, (maximo - entrada) / a)
+
+
+COSTO_BASE = 0.0011  # decide el resultado (decision de Andres)
+COSTOS_SENSIBILIDAD = {"sens0008": 0.0008, "sens0014": 0.0014}  # solo lectura
+CLAVE_CELDA = ["hipotesis", "version", "tf", "sentido"]
+CONTEOS = ["n", "excluidos_dedup", "excluidos_sin_referencia", "excluidos_datos_faltantes"]
+BLOQUES_NOMBRES = ["E", "C1", "C2"]
+
+
+def _columnas_bloque(b: str) -> list:
+    stats = ["diferencia_media", "cota_inferior", "cota_superior"]
+    tags = ["base", *COSTOS_SENSIBILIDAD]
+    return [f"n_{b}", f"mfe_medio_{b}", f"mae_medio_{b}"] + [f"{s}_{b}_{t}" for t in tags for s in stats]
+
+
+def _columna_motivo(motivo: str) -> str:
+    if motivo == "dedup":
+        return "excluidos_dedup"
+    if motivo.startswith("menos de"):
+        return "excluidos_sin_referencia"
+    if motivo in ("sin vela +8", "ATR no disponible"):
+        return "excluidos_datos_faltantes"
+    raise ValueError(f"motivo de exclusion sin columna: {motivo!r}")
+
+
+def _conteos(grupo: pd.DataFrame) -> dict:
+    excluido = grupo["excluido"].astype(bool)
+    out = {"n": int((~excluido).sum()), "excluidos_dedup": 0, "excluidos_sin_referencia": 0, "excluidos_datos_faltantes": 0}
+    for motivo in grupo.loc[excluido, "motivo"]:
+        out[_columna_motivo(motivo)] += 1
+    return out
+
+
+def _media_no_excluidos(grupo: pd.DataFrame, columna: str) -> float:
+    if columna not in grupo.columns:  # filas sin la columna (p. ej. sin maximos): no hay media
+        return np.nan
+    valores = grupo.loc[~grupo["excluido"].astype(bool), columna].astype(float)
+    return float(valores.mean()) if len(valores) else np.nan
+
+
+def resumen_agregado(df: pd.DataFrame, semilla: int = 0, celdas: list | None = None, universo: list = PRINCIPAL) -> pd.DataFrame:
+    """Una fila por celda agregada SIN simbolo: hipotesis, version, sentido, tf (todos los simbolos del universo juntos).
+
+    df: filas de diferencias de varios simbolos, con columnas COLUMNAS_CELDA + 'simbolo', 'dia', 'diferencia', 'excluido' y 'motivo'.
+        Los eventos suprimidos por dedup se pasan como filas con excluido=True y motivo="dedup".
+    universo: simbolos que entran. Por defecto cripto (PRINCIPAL); los NC* van en otra llamada con universo=SECUNDARIO
+        (resumen aparte, decision de Andres: NC* no entra en las 76 filas ni en el criterio de confirmacion).
+    Motivos de exclusion (motivo de diferencias -> columna): "dedup" -> excluidos_dedup;
+        "menos de 20 candidatas validas" -> excluidos_sin_referencia;
+        "sin vela +8" y "ATR no disponible" -> excluidos_datos_faltantes.
+    Una fila por celda (76 con celdas_declaradas()); el costo no multiplica filas. Columnas por bloque (E, C1, C2):
+        n, mfe_medio, mae_medio (de las filas de costo base; no dependen del costo) y, para el costo base (*_base_*, la que decide)
+        y las sensibilidades (*_sens0008_*, *_sens0014_*, solo lectura): diferencia_media, cota_inferior, cota_superior
+        (bootstrap por dia, semilla fija). Conteos (n, excluidos_*) de las filas de costo base: n + excluidos = filas de la celda.
+    """
+    df = df[df["simbolo"].isin(universo)]  # el resultado no tiene simbolo: sin este filtro NC* se sumaria a cripto
+    if celdas is None:  # por defecto, las 76 celdas declaradas (incluidas las de 0 eventos)
+        celdas = celdas_declaradas()
+    filas = []
+    for hip, ver, tf, sen in celdas:
+        celda = df[(df["hipotesis"] == hip) & (df["version"] == ver) & (df["tf"] == tf) & (df["sentido"] == sen)]
+        base = celda[np.isclose(celda["costo"].astype(float), COSTO_BASE)]
+        fila = {"hipotesis": hip, "version": ver, "tf": tf, "sentido": sen, **_conteos(base)}
+        for b in BLOQUES_NOMBRES:
+            sub = base[base["bloque"] == b]
+            fila.update({f"n_{b}": int((~sub["excluido"].astype(bool)).sum()),
+                         f"mfe_medio_{b}": _media_no_excluidos(sub, "mfe"),
+                         f"mae_medio_{b}": _media_no_excluidos(sub, "mae")})
+            for tag, costo in [("base", COSTO_BASE), *COSTOS_SENSIBILIDAD.items()]:
+                sub_costo = celda[(celda["bloque"] == b) & np.isclose(celda["costo"].astype(float), costo)]
+                media, lo, hi = intervalo_diferencia(sub_costo, semilla=semilla)
+                fila.update({f"diferencia_media_{b}_{tag}": media, f"cota_inferior_{b}_{tag}": lo,
+                             f"cota_superior_{b}_{tag}": hi})
+        filas.append(fila)
+    return pd.DataFrame(filas, columns=CLAVE_CELDA + CONTEOS + [c for b in BLOQUES_NOMBRES for c in _columnas_bloque(b)])
+
+
+def resumen_por_simbolo(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
+    """Detalle solo descriptivo: una fila por (simbolo, hipotesis, version, tf, sentido, bloque). Sin costo en la clave.
+
+    n, excluidos_* y mfe/mae salen de las filas de costo base (una vez). diferencia_media (media simple de los no
+    excluidos, sin bootstrap) va por costo base (*_base) y sensibilidades (*_sens0008, *_sens0014). Sin cota ni significancia.
+    """
+    claves = ["simbolo", *CLAVE_CELDA, "bloque"]
+    tags = ["base", *COSTOS_SENSIBILIDAD]
+    filas = []
+    for clave, grupo in df.groupby(claves, sort=True, dropna=False):
+        fila = dict(zip(claves, clave))
+        base = grupo[np.isclose(grupo["costo"].astype(float), COSTO_BASE)]
+        fila.update(_conteos(base))
+        fila["mfe_medio"] = _media_no_excluidos(base, "mfe")
+        fila["mae_medio"] = _media_no_excluidos(base, "mae")
+        for tag, costo in [("base", COSTO_BASE), *COSTOS_SENSIBILIDAD.items()]:
+            sub = grupo[np.isclose(grupo["costo"].astype(float), costo)]
+            fila[f"diferencia_media_{tag}"] = _media_no_excluidos(sub, "diferencia")
+        filas.append(fila)
+    columnas_costo = [f"diferencia_media_{t}" for t in tags]
+    return pd.DataFrame(filas, columns=claves + CONTEOS + ["mfe_medio", "mae_medio"] + columnas_costo)

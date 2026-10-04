@@ -139,3 +139,11 @@ Estas decisiones prevalecen sobre el texto original de las secciones 2 y 3 donde
 - **Unidad de celda (§7, 76 celdas):** celda = hipótesis × sentido × temporalidad × bloque, con todos los símbolos juntos. El detalle por símbolo es descriptivo y sin test. Decisión de Andrés. Pendiente de implementar antes de fase 1 (el resumen de este PR todavía agrupa por símbolo).
 - **Exclusión de candidatas al azar (§5):** la referencia excluye solo las velas de la celda, no las de todas las hipótesis. Decisión de Andrés.
 - **Eventos suprimidos (§2, §5):** solo cuentan los eventos contados; las velas de eventos suprimidos por dedup pueden ser candidatas de la referencia. Decisión de Andrés.
+
+### Corrección 2026-10-04: unidad de celda (reemplaza la entrada de arriba, que queda como registro)
+
+- **Celda:** hipótesis-versión × temporalidad × sentido. Son 76 celdas, como declara §7. Todos los símbolos van juntos dentro de cada celda.
+- **Bloques y costos:** bloques E, C1 y C2 y costos (base 0,11 %; sensibilidades 0,08 % y 0,14 %) son columnas dentro de la celda, no filas.
+- **Máximos:** MFE y MAE brutos, sin costos, en unidades de ATR(14) de la vela de señal, horizonte i+1..i+8.
+- **Exclusión de candidatas al azar:** solo las velas de la celda; y solo cuentan los eventos contados.
+- **Detalle por símbolo:** descriptivo, sin cotas ni significancia.
