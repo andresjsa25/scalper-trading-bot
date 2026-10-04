@@ -125,3 +125,13 @@ Por evento: retorno en el sentido de la operación desde la apertura siguiente h
 4. Se corre la fase 0 y se muestra la tabla de frecuencia.
 5. Con el OK de Andrés, fase 1; con otro OK, fase 2.
 6. Lo que se confirme se escribe como variante en `protocolo-v2` (spec aparte).
+
+## Anexo 2026-10-04: decisiones de Andrés
+
+Estas decisiones prevalecen sobre el texto original de las secciones 2 y 3 donde difieran. No cambian las hipótesis ni las versiones.
+
+- **Vigencia del FVG (§3):** formado en j con i-23 ≤ j ≤ i, es decir, las 24 velas que incluyen la vela de señal.
+- **Relleno del FVG (§3):** una vela rellena solo si cruza el interior de la zona (contacto solo en el borde no cuenta). El relleno revisa las velas j+1..i-1; la vela de señal no cuenta como relleno (decisión sobre H3).
+- **Toque de la señal (§3):** estricto, la vela de señal cruza el interior de la zona.
+- **Deduplicación (§2):** un evento contado bloquea i+1..i+7; un evento en i+8 cuenta. Los eventos suprimidos no bloquean (el bloqueo se mide desde el último evento contado).
+- **Diferencia (§5):** el estadístico del bootstrap por día es la media de la diferencia evento − referencia al azar, con semilla fija.
