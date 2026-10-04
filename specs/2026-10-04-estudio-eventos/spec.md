@@ -135,3 +135,4 @@ Estas decisiones prevalecen sobre el texto original de las secciones 2 y 3 donde
 - **Toque de la señal (§3):** estricto, la vela de señal cruza el interior de la zona.
 - **Deduplicación (§2):** un evento contado bloquea i+1..i+7; un evento en i+8 cuenta. Los eventos suprimidos no bloquean (el bloqueo se mide desde el último evento contado).
 - **Diferencia (§5):** el estadístico del bootstrap por día es la media de la diferencia evento − referencia al azar, con semilla fija.
+- **Universo principal (§1, §6):** XAUT queda en el universo principal con cobertura parcial en E (desde 2025-04-03), decisión de Andrés.

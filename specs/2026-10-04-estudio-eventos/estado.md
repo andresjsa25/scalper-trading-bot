@@ -82,3 +82,5 @@ Fase actual: lista para merge (PR #9). Ajustes aprobados en revisión vuelta 4. 
 - 2026-10-04 · Andrés (decisiones finales antes del PR) · (1) H3: la vela de señal no cuenta como relleno; se mantiene. (2) Dedup: los eventos suprimidos no bloquean; solo cuentan los contados. (3) Se agrega a la spec el anexo "decisiones de Andrés" (`spec.md`, final). Pendientes que siguen: XAUT (datos desde 2025-04-03) y la implementación de la diferencia contra el azar, antes de fase 1.
 
 - 2026-10-04 · Publicación · PR #9 abierto contra main (rama `estudio-eventos-ajustes`, mergeable). CI: el repo no tiene workflows y el PR no reporta checks. `tsc`/`npm test` no aplican (repo Python); se usó `python -m pytest -q` (95 pasan). Merge lo hace Andrés.
+
+- 2026-10-04 · Andrés · XAUT queda en el universo principal con cobertura parcial en E (desde 2025-04-03), decisión de Andrés. Se anota en el anexo de la spec; no cambia los conteos.
