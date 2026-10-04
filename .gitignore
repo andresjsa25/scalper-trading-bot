@@ -3,6 +3,9 @@ data/
 results/*.png
 results/live_trading/
 logs/
+# Exports de BingX (historial de órdenes): datos de cuenta, nunca al repo
+*.zip
+Order_History*
 __pycache__/
 *.pyc
 .venv/
