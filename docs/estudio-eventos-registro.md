@@ -191,6 +191,8 @@ Diferencias contra la corrida anterior (solo celdas que cambian; formato columna
 Total: 83 celdas en 18 filas cambian. Cambia el campo "evaluable" en 2 filas.
 Las tablas 2 y 3 de `docs/estudio-eventos-frecuencia.md` también cambian porque se derivan de los mismos conteos.
 
+Nota de la corrección (movida desde `docs/estudio-eventos-frecuencia.md`, donde se perdía al regenerar): se regeneró tras decisiones de Andrés (se retiró la regla de barrida única en H5, y el toque de FVG pasó a ser estricto: la vela de señal debe cruzar el interior de la zona). Cambian 83 celdas en 18 filas; detalle en esta sección.
+
 ## Corrección 2026-10-04 (2): relleno estricto y celdas en cero
 
 Sección agregada; no se editan filas anteriores. Motivo: spec §3 (relleno de velas previas por cruce del interior, tarea 1) y `fase0` ahora escribe las 76 celdas, también las de 0 eventos. Se regeneró `python -m estudio_eventos.fase0`. Filas nuevas de fase 0 (76 celdas):
