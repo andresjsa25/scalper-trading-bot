@@ -45,9 +45,9 @@ def test_resumen_agregado_cuenta_excluidos_por_motivo_y_n_mas_excluidos_es_el_to
         fila(excluido=True, motivo="menos de 20 candidatas validas"),      # sin referencia disponible
         fila(excluido=True, motivo="sin vela +8"),                         # datos faltantes
     ]
-    res = resumen_agregado(pd.DataFrame(filas), semilla=0)
+    res = resumen_agregado(pd.DataFrame(filas), semilla=0, celdas=[("H1", "completa", "1h", "long")])
 
-    assert len(res) == 1
+    assert len(res) == 1  # el default es las 76 celdas declaradas; este test mira una sola
     r = res.iloc[0]
     assert r["n"] == 1
     assert r["excluidos_dedup"] == 1

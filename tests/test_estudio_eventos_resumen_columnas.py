@@ -65,3 +65,9 @@ def test_universo_principal_no_mezcla_nc_y_resumen_nc_solo_tiene_nc():
     assert len(secundario) == 1
     assert secundario.loc[0, "n_C1"] == 1 and secundario.loc[0, "n_E"] == 0
     assert "BTC" in PRINCIPAL and "NCSKAAPL2USD" in SECUNDARIO
+
+
+def test_default_de_celdas_es_las_76_declaradas_aunque_el_df_tenga_pocas():
+    res = resumen_agregado(pd.DataFrame([fila(diferencia=0.5)]), semilla=0)
+    assert len(res) == 76
+    assert set(map(tuple, res[["hipotesis", "version", "tf", "sentido"]].to_numpy())) == set(celdas_declaradas())
