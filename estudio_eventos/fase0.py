@@ -127,13 +127,24 @@ def markdown(df: pd.DataFrame) -> str:
     return "\n".join(lineas)
 
 
+def tabla_simbolo_mes(total: pd.DataFrame, tf: str) -> pd.DataFrame:
+    """Una fila por (simbolo, mes, bloque) y una columna por (hipotesis, version, sentido) de la temporalidad. Conteos completos, ceros incluidos."""
+    t = total[total["tf"] == tf].assign(col=lambda d: d["hipotesis"] + "/" + d["version"] + "/" + d["sentido"])
+    cuentas = t.groupby(["simbolo", "mes", "bloque", "col"]).size()
+    columnas = [f"{h}/{v}/{s}" for h, v, tf_, s in celdas_declaradas() if tf_ == tf]
+    filas = []
+    for universo, simbolos in (("principal", PRINCIPAL), ("secundario", SECUNDARIO)):
+        bloques = total[total["universo"] == universo][["mes", "bloque"]].drop_duplicates().sort_values(["mes", "bloque"])
+        for simbolo in simbolos:
+            for mes, bloque in bloques.itertuples(index=False):
+                fila = {"simbolo": simbolo, "mes": mes, "bloque": bloque}
+                fila.update({c: int(cuentas.get((simbolo, mes, bloque, c), 0)) for c in columnas})
+                filas.append(fila)
+    return pd.DataFrame(filas)
+
+
 def escribir_frecuencia(total: pd.DataFrame, celdas: pd.DataFrame) -> None:
     completas = total[total["version"].isin(["completa", "base"])]
-    meses = sorted(total["mes"].unique())
-    simbolo_mes = completas[completas["universo"] == "principal"].pivot_table(
-        index="simbolo", columns="mes", values="tf", aggfunc="count", fill_value=0)
-    simbolo_mes = simbolo_mes.reindex(columns=[m for m in meses if m in simbolo_mes.columns], fill_value=0)
-    simbolo_mes = simbolo_mes.reset_index()
     sec = completas[completas["universo"] == "secundario"].pivot_table(
         index="simbolo", columns="bloque", values="tf", aggfunc="count", fill_value=0).reset_index()
     texto = [
@@ -149,9 +160,13 @@ def escribir_frecuencia(total: pd.DataFrame, celdas: pd.DataFrame) -> None:
         "",
         markdown(celdas),
         "",
-        "## Tabla 2: principal, por simbolo y mes (solo versiones completas: H1-H4 `completa` y H5 `base`; suma de 1h/4h y sentidos)",
+        "## Tabla 2a: por simbolo, mes y bloque, temporalidad 1h (columnas = hipotesis/version/sentido; ceros incluidos)",
         "",
-        markdown(simbolo_mes),
+        markdown(tabla_simbolo_mes(total, "1h")),
+        "",
+        "## Tabla 2b: por simbolo, mes y bloque, temporalidad 4h (columnas = hipotesis/version/sentido; ceros incluidos)",
+        "",
+        markdown(tabla_simbolo_mes(total, "4h")),
         "",
         "## Tabla 3: secundario NC* por bloque (solo versiones completas; no entra al criterio de fase 1)",
         "",
