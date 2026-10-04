@@ -71,3 +71,34 @@ def test_default_de_celdas_es_las_76_declaradas_aunque_el_df_tenga_pocas():
     res = resumen_agregado(pd.DataFrame([fila(diferencia=0.5)]), semilla=0)
     assert len(res) == 76
     assert set(map(tuple, res[["hipotesis", "version", "tf", "sentido"]].to_numpy())) == set(celdas_declaradas())
+
+
+def test_n_media_y_mfe_a_mano_con_filas_excluidas():
+    filas = [
+        fila(diferencia=1.0, mfe=1.0, mae=0.2),
+        fila(diferencia=2.0, mfe=2.0, mae=0.4, dia="2025-02-02"),
+        fila(diferencia=3.0, mfe=3.0, mae=0.6, dia="2025-02-03"),
+        fila(excluido=True, motivo="sin vela +8", mfe=100.0, mae=100.0, dia="2025-02-04"),
+    ]
+    res = resumen_agregado(pd.DataFrame(filas), semilla=0, celdas=[("H1", "completa", "1h", "long")])
+    r = res.iloc[0]
+    assert r["n_E"] == 3
+    assert r["excluidos_datos_faltantes"] == 1
+    assert r["diferencia_media_E_base"] == pytest.approx(2.0)
+    assert r["mfe_medio_E"] == pytest.approx(2.0)  # la fila excluida (mfe 100) no entra
+    assert r["mae_medio_E"] == pytest.approx(0.4)
+
+
+def test_diferencias_mfe_mae_coinciden_con_maximos_atr():
+    from estudio_eventos.diferencia import COSTO_BASE, diferencias, maximos_atr
+    from estudio_sinteticos import aleatorio
+
+    df = aleatorio(80, semilla=7)
+    df["bloque"] = "E"
+    df["sentido"] = "long"
+    eventos = pd.DataFrame({"pos": [30, 45, 60], "sentido": ["long", "long", "long"]})
+    res = diferencias(df, eventos, costo=COSTO_BASE)
+    for _, r in res.iterrows():
+        mfe, mae = maximos_atr(df, int(r["pos"]), r["sentido"])
+        assert r["mfe"] == pytest.approx(mfe)
+        assert r["mae"] == pytest.approx(mae)
