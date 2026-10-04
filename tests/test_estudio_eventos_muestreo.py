@@ -4,6 +4,7 @@ import sys
 
 import numpy as np
 import pandas as pd
+import pytest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -18,14 +19,23 @@ def _eventos(posiciones, simbolo="BTC", tf="1h", sentido="long"):
 
 
 class TestDeduplicacion:
-    def test_no_cuenta_otro_evento_dentro_de_las_8_velas_siguientes(self):
-        # 10 cuenta. 12 (+2) y 18 (+8) quedan bloqueados. 19 (+9) cuenta. 27 (+8 desde 19) queda bloqueado.
+    def test_no_cuenta_otro_evento_dentro_de_i_mas_7(self):
+        # Regla de Andres: bloquea i+1..i+7. 10 cuenta. 12 (+2) queda bloqueado. 18 (+8) cuenta.
+        # 19 (+1 desde 18) queda bloqueado. 27 (+9 desde 18) cuenta.
         res = deduplicar(_eventos([10, 12, 18, 19, 27]), ventana=8)
-        assert res["pos"].tolist() == [10, 19]
+        assert res["pos"].tolist() == [10, 18, 27]
 
     def test_evento_a_9_velas_del_anterior_si_cuenta(self):
         res = deduplicar(_eventos([50, 59]), ventana=8)
         assert res["pos"].tolist() == [50, 59]
+
+    def test_decision_andres_evento_a_i_mas_7_se_suprime(self):
+        res = deduplicar(_eventos([100, 107]), ventana=8)
+        assert res["pos"].tolist() == [100]
+
+    def test_decision_andres_evento_a_i_mas_8_cuenta(self):
+        res = deduplicar(_eventos([100, 108]), ventana=8)
+        assert res["pos"].tolist() == [100, 108]
 
     def test_el_bloqueo_es_por_simbolo_sentido_y_temporalidad(self):
         eventos = pd.concat([
@@ -84,25 +94,27 @@ class TestReferenciaAlAzar:
 
 def _eventos_dia(seed=0, n=200, dias=60):
     rng = np.random.default_rng(seed)
-    return pd.DataFrame({"dia": rng.integers(0, dias, n), "retorno": rng.normal(0.1, 1.0, n)})
+    return pd.DataFrame({"dia": rng.integers(0, dias, n), "diferencia": rng.normal(0.1, 1.0, n)})
 
 
 class TestBootstrapPorDia:
     def test_misma_semilla_dos_corridas_identicas(self):
         df = _eventos_dia()
-        a = bootstrap_dia(df, "retorno", n_boot=500, semilla=42)
-        b = bootstrap_dia(df, "retorno", n_boot=500, semilla=42)
+        a = bootstrap_dia(df, "diferencia", n_boot=500, semilla=42)
+        b = bootstrap_dia(df, "diferencia", n_boot=500, semilla=42)
         assert a == b
 
     def test_no_depende_del_estado_global_del_generador(self):
         df = _eventos_dia()
         np.random.seed(1)
-        a = bootstrap_dia(df, "retorno", n_boot=500, semilla=42)
+        a = bootstrap_dia(df, "diferencia", n_boot=500, semilla=42)
         np.random.seed(2)
         np.random.rand(100)
-        b = bootstrap_dia(df, "retorno", n_boot=500, semilla=42)
+        b = bootstrap_dia(df, "diferencia", n_boot=500, semilla=42)
         assert a == b
 
-    def test_intervalo_contiene_la_media(self):
-        media, lo, hi = bootstrap_dia(_eventos_dia(), "retorno", n_boot=500, semilla=42)
-        assert lo <= media <= hi
+    def test_estadistico_es_la_media_de_las_diferencias_y_el_intervalo_la_contiene(self):
+        df = _eventos_dia()
+        media, lo, hi = bootstrap_dia(df, "diferencia", n_boot=500, semilla=42)
+        assert media == pytest.approx(df["diferencia"].mean())
+        assert lo < media < hi

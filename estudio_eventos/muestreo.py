@@ -13,7 +13,7 @@ def deduplicar(eventos: pd.DataFrame, ventana: int = 8) -> pd.DataFrame:
         ultimo = None
         mantener = []
         for pos in grupo["pos"].to_numpy():
-            cuenta = ultimo is None or pos - ultimo > ventana
+            cuenta = ultimo is None or pos - ultimo >= ventana
             if cuenta:
                 ultimo = pos
             mantener.append(cuenta)
@@ -42,7 +42,8 @@ def referencia_azar(df: pd.DataFrame, i_evento: int, sentido: str, excluir: np.n
 def bootstrap_dia(df: pd.DataFrame, columna: str, n_boot: int = 2000, semilla: int = 0, alpha: float = 0.05) -> tuple:
     """Remuestreo de dias (columna 'dia') con semilla propia. Devuelve (media, cota_inf, cota_sup).
 
-    Estadistico: media de todos los eventos. Cada remuestreo elige dias con reemplazo y pondera sus eventos.
+    'columna' trae la diferencia por evento (retorno del evento - media de su referencia al azar, spec seccion 5).
+    Estadistico: media de esas diferencias. Cada remuestreo elige dias con reemplazo y pondera sus eventos.
     """
     valores = df[columna].to_numpy(dtype=float)
     _, inversa = np.unique(df["dia"].to_numpy(), return_inverse=True)

@@ -18,24 +18,20 @@ def formacion_fvg(df: pd.DataFrame, direccion: str) -> pd.Series:
     return (df["high"] < df["low"].shift(2)).astype(bool)
 
 
-def _solapa(alto, bajo, zona):
-    return bajo <= zona[1] and alto >= zona[0]
-
-
 def _entra(alto, bajo, zona):
-    """Toque estricto: la vela cruza el interior de la zona; tocar solo el borde no cuenta."""
+    """Cruce estricto del interior de la zona: tocar solo el borde no cuenta (toque y relleno)."""
     return bajo < zona[1] and alto > zona[0]
 
 
 def fvg_en(df: pd.DataFrame, i: int, direccion: str, ventana: int = 24, tocado: bool = True):
     """Zona (bajo, alto) del FVG vigente en i (formado en la ventana), sin rellenar por velas previas a i y tocado por la vela i; None si no hay.
 
-    Vigente: formado en las 23 velas previas a i (j en [i-23, i-1]), ventana de 24 velas que incluye la de senal.
-    Sin rellenar: ninguna vela j+1..i-1 se solapa con la zona. Si hay varios, devuelve el mas reciente valido.
+    Vigente: formado en las 24 velas que terminan en i (j en [i-23, i]), la de senal incluida (decision de Andres).
+    Sin rellenar: ninguna vela j+1..i-1 cruza el interior de la zona (tocar solo el borde no rellena). Si j == i no hay velas que revisar y el FVG no puede estar rellenado. Si hay varios, devuelve el mas reciente valido.
     """
     alto = df["high"].to_numpy(dtype=float)
     bajo = df["low"].to_numpy(dtype=float)
-    for j in range(i - 1, i - ventana, -1):
+    for j in range(i, i - ventana, -1):
         if j < 2:
             break
         if direccion == "long":
@@ -46,7 +42,7 @@ def fvg_en(df: pd.DataFrame, i: int, direccion: str, ventana: int = 24, tocado: 
             if not alto[j] < bajo[j - 2]:
                 continue
             zona = (alto[j], bajo[j - 2])
-        if any(_solapa(alto[k], bajo[k], zona) for k in range(j + 1, i)):
+        if any(_entra(alto[k], bajo[k], zona) for k in range(j + 1, i)):
             continue
         if tocado and not _entra(alto[i], bajo[i], zona):
             continue

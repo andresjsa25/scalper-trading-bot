@@ -84,6 +84,14 @@ class TestFvg:
         df = _fvg_con(RELLENO, TOCA)  # RELLENO entra en la zona antes de la senal
         assert fvg_en(df, 4, "long") is None
 
+    def test_relleno_que_toca_solo_el_borde_superior_no_rellena(self):
+        borde = (102.0, 102.5, 101.0, 101.5)  # low = borde superior (101.0): no cruza el interior
+        assert fvg_en(_fvg_con(borde, TOCA), 4, "long") == (100.5, 101.0)
+
+    def test_relleno_que_entra_un_poco_en_la_zona_si_rellena(self):
+        entra_poco = (102.0, 102.5, 100.95, 101.5)  # low 100.95 < 101.0 y high > 100.5: cruza el interior
+        assert fvg_en(_fvg_con(entra_poco, TOCA), 4, "long") is None
+
     def test_fvg_solo_cuenta_como_tocado_si_la_vela_de_senal_entra(self):
         assert fvg_en(_fvg_con(ARRIBA), 3, "long") is None
         assert fvg_en(_fvg_con(TOCA), 3, "long") == (100.5, 101.0)
@@ -91,6 +99,18 @@ class TestFvg:
     def test_fvg_toque_solo_en_el_borde_no_cuenta(self):
         borde = (102.0, 102.5, 101.0, 101.5)  # low = borde superior de la zona (101.0): no entra
         assert fvg_en(_fvg_con(borde), 3, "long") is None
+
+    def test_fvg_formado_en_la_propia_senal_es_vigente(self):
+        # Decision de Andres: la ventana de 24 velas incluye la vela de senal i (j == i). Sin toque (H3).
+        df = velas(list(FVG_ALCISTA))  # FVG formado en j=2 = i
+        assert fvg_en(df, 2, "long", tocado=False) == (100.5, 101.0)
+
+    def test_fvg_formado_a_23_velas_es_vigente_y_a_24_no(self):
+        # i = 26. FVG en j=2 -> antiguedad 24 (i-24): no vigente. Con 23 velas de por medio (i=25): vigente.
+        df_24 = _fvg_con(*([ARRIBA] * 24))
+        assert fvg_en(df_24, 26, "long", tocado=False) is None
+        df_23 = _fvg_con(*([ARRIBA] * 23))
+        assert fvg_en(df_23, 25, "long", tocado=False) == (100.5, 101.0)
 
     def test_fvg_bajista_espejo_de_formacion_y_zona(self):
         df = invertir(_fvg_con(ARRIBA, TOCA))
