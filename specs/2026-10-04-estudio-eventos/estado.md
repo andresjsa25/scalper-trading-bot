@@ -1,6 +1,6 @@
 # Estado: estudio de eventos de patrones
 
-Fase actual: cambios del Constructor sobre fase 0 en rama `estudio-eventos-ajustes` (5 tareas, pendiente de `/revisar`). Fase 0 regenerada. Fases 1 y 2 NO ejecutadas; requieren OK de Andrés. pytest: 91 pasan.
+Fase actual: cambios del Constructor sobre fase 0 en rama `estudio-eventos-ajustes` (5 tareas, pendiente de `/revisar`). Fase 0 regenerada. Fases 1 y 2 NO ejecutadas; requieren OK de Andrés. pytest: 95 pasan.
 
 ## Registro
 
@@ -76,3 +76,5 @@ Fase actual: cambios del Constructor sobre fase 0 en rama `estudio-eventos-ajust
   Fase 0 regenerada con `python -m estudio_eventos.fase0`: 76 celdas. El script no toca el registro (existia): las 76 filas y la lista de cambios se agregaron a mano en la seccion (3). Tablas 1, 2a y 2b suman lo mismo (1h: 18742; 4h: 4809).
   pytest: 95 pasan, 0 fallan (`python -m pytest -q`).
   Ideas para el Proponente: (i) `fase0` debe avisar o escribir la seccion de correccion automaticamente, para no agregar filas a mano; (ii) la expectativa de dedup en el test del Tester quedo cambiada por autorizacion; conviene que el Tester confirme.
+
+- 2026-10-04 · Revisor (vuelta 4, rama `estudio-eventos-ajustes`) · Veredicto: Aprobar. Altos: ninguno. Medios abiertos: (1) H3: la vela de señal no cuenta como relleno (`patrones.py:45`); resolución del Constructor, falta decisión de Andrés. (2) las velas suprimidas no reinician el bloqueo de dedup (`muestreo.py:16`); el test cambió por autorización del coordinador, falta confirmación de Andrés. (3) la spec §2 y §3 no refleja las decisiones de Andrés (`spec.md:48, 55`). (4) la diferencia contra la referencia al azar no está implementada; bloquea fase 1. Bajos: test renombrado a `..._dentro_de_i_mas_7`; pytest en estado corregido a 95; `fase0` no escribe la sección de corrección (paso manual); XAUT pendiente de Andrés. Verificado: 76 celdas, Tablas 2a/2b = Tabla 1, registro solo agregar (0 borrados), protegidos sin cambios, 95 pytest.

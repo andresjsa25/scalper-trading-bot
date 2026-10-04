@@ -19,7 +19,7 @@ def _eventos(posiciones, simbolo="BTC", tf="1h", sentido="long"):
 
 
 class TestDeduplicacion:
-    def test_no_cuenta_otro_evento_dentro_de_las_8_velas_siguientes(self):
+    def test_no_cuenta_otro_evento_dentro_de_i_mas_7(self):
         # Regla de Andres: bloquea i+1..i+7. 10 cuenta. 12 (+2) queda bloqueado. 18 (+8) cuenta.
         # 19 (+1 desde 18) queda bloqueado. 27 (+9 desde 18) cuenta.
         res = deduplicar(_eventos([10, 12, 18, 19, 27]), ventana=8)
