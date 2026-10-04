@@ -100,6 +100,11 @@ def contar() -> pd.DataFrame:
     return total[total["bloque"] != ""].reset_index(drop=True)
 
 
+def celdas_declaradas() -> list:
+    """Las 76 celdas de la spec (19 versiones x 2 temporalidades x 2 sentidos), tambien las de 0 eventos."""
+    return sorted((h, v, tf, s) for tf in ("1h", "4h") for h, v, _ in especificaciones(None, tf, "") for s in ("long", "short"))
+
+
 def tabla_celdas(total: pd.DataFrame) -> pd.DataFrame:
     tab = total.pivot_table(index=["hipotesis", "version", "tf", "sentido"], columns=["universo", "bloque"],
                             values="simbolo", aggfunc="count", fill_value=0)
@@ -107,7 +112,9 @@ def tabla_celdas(total: pd.DataFrame) -> pd.DataFrame:
     for c in ["prin_E", "prin_C1", "prin_C2", "sec_C1", "sec_C2"]:
         if c not in tab.columns:
             tab[c] = 0
-    tab = tab[["prin_E", "prin_C1", "prin_C2", "sec_C1", "sec_C2"]].reset_index()
+    tab = tab[["prin_E", "prin_C1", "prin_C2", "sec_C1", "sec_C2"]]
+    indice = pd.MultiIndex.from_tuples(celdas_declaradas(), names=["hipotesis", "version", "tf", "sentido"])
+    tab = tab.reindex(indice, fill_value=0).reset_index()
     tab["evaluable"] = np.where(tab["prin_E"] >= MINIMO_E, "si", "no evaluable")
     return tab
 
@@ -181,7 +188,10 @@ def main() -> None:
     total = contar()
     celdas = tabla_celdas(total)
     escribir_frecuencia(total, celdas)
-    escribir_registro(celdas)
+    if not os.path.exists(os.path.join(DOCS, "estudio-eventos-registro.md")):
+        escribir_registro(celdas)
+    else:
+        print("Registro existente: no se toca (solo agregar). Filas nuevas van en una seccion de correccion.")
     print(celdas.to_string(index=False))
 
 
