@@ -27,7 +27,7 @@ Fase actual: lista para merge (PR #8). Fase 0 construida y revisada (2 vueltas, 
   (10) RESUELTA: pivote maximo confirmado hasta S-1; ventana S+1..S+12 inclusive; la vela que cierra sobre el pivote tambien se controla por low menor al de S; FVG durante la ruptura = formacion en j in [S+1, senal].
   (11) RESUELTA: bloquea i+1..i+8; las velas suprimidas no reinician el conteo; la deduplicacion se hace por hipotesis y version.
   (12) RESUELTA: semilla por evento (default_rng([semilla, i])); si hay menos de 20 candidatas el evento queda sin referencia (no evaluable); el sentido filtra velas por la columna 'sentido' (ver fix 1585b54); la exclusion de eventos de la hipotesis/version la arma el llamador.
-  (13) RESUELTA: estadistico = media de todos los eventos; remuestreo de dias con reemplazo ponderando sus eventos.
+  (13) RESUELTA: estadistico = media de todos los eventos; remuestreo de dias con reemplazo ponderando sus eventos. CAMBIADO por spec §5 (diferencia), decisión del pedido de Andrés: el estadístico es la media de las diferencias (retorno del evento − media de su referencia al azar); `bootstrap_dia` recibe esa diferencia por evento.
   (14) RESUELTA: fvg_en devuelve el FVG valido mas reciente; H usa "existe alguna".
   (15) RESUELTA: las versiones de la seccion 3 se implementan tal cual (H3 sin FVG = fvg=False). No hay negativo aislado que probar.
   Nueva, agregada para pasar el test de H5 (`relleno_con_low_menor`): cada pivote se barre una sola vez (primera barrida). RETIRADA por decision de Andres (ver entrada de correccion abajo).

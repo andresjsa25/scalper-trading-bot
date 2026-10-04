@@ -4,6 +4,7 @@ import sys
 
 import numpy as np
 import pandas as pd
+import pytest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -84,25 +85,27 @@ class TestReferenciaAlAzar:
 
 def _eventos_dia(seed=0, n=200, dias=60):
     rng = np.random.default_rng(seed)
-    return pd.DataFrame({"dia": rng.integers(0, dias, n), "retorno": rng.normal(0.1, 1.0, n)})
+    return pd.DataFrame({"dia": rng.integers(0, dias, n), "diferencia": rng.normal(0.1, 1.0, n)})
 
 
 class TestBootstrapPorDia:
     def test_misma_semilla_dos_corridas_identicas(self):
         df = _eventos_dia()
-        a = bootstrap_dia(df, "retorno", n_boot=500, semilla=42)
-        b = bootstrap_dia(df, "retorno", n_boot=500, semilla=42)
+        a = bootstrap_dia(df, "diferencia", n_boot=500, semilla=42)
+        b = bootstrap_dia(df, "diferencia", n_boot=500, semilla=42)
         assert a == b
 
     def test_no_depende_del_estado_global_del_generador(self):
         df = _eventos_dia()
         np.random.seed(1)
-        a = bootstrap_dia(df, "retorno", n_boot=500, semilla=42)
+        a = bootstrap_dia(df, "diferencia", n_boot=500, semilla=42)
         np.random.seed(2)
         np.random.rand(100)
-        b = bootstrap_dia(df, "retorno", n_boot=500, semilla=42)
+        b = bootstrap_dia(df, "diferencia", n_boot=500, semilla=42)
         assert a == b
 
-    def test_intervalo_contiene_la_media(self):
-        media, lo, hi = bootstrap_dia(_eventos_dia(), "retorno", n_boot=500, semilla=42)
-        assert lo <= media <= hi
+    def test_estadistico_es_la_media_de_las_diferencias_y_el_intervalo_la_contiene(self):
+        df = _eventos_dia()
+        media, lo, hi = bootstrap_dia(df, "diferencia", n_boot=500, semilla=42)
+        assert media == pytest.approx(df["diferencia"].mean())
+        assert lo < media < hi
