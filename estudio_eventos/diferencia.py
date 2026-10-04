@@ -38,7 +38,10 @@ def diferencias(df: pd.DataFrame, eventos: pd.DataFrame, costo: float, semilla: 
     df: velas de un (simbolo, temporalidad) con columnas open, high, low, close, bloque y sentido.
         La columna 'sentido' es la que usa referencia_azar para filtrar candidatas: una llamada por sentido.
     eventos: DataFrame con columnas 'pos' (posicion iloc en df) y 'sentido' ("long"/"short"),
-        ya deduplicado con deduplicar(). Los eventos que el llamador pasa son los contados.
+        ya deduplicado con deduplicar(). Los eventos que el llamador pasa son los contados (decision de Andres: solo contados;
+    las velas de eventos suprimidos por dedup pueden ser candidatas).
+    Alcance de la exclusion (decision de Andres): solo las velas de la celda que el llamador pasa en 'eventos'
+    (hipotesis x sentido x temporalidad x bloque), no las de todas las hipotesis.
     costo: fraccion de ida y vuelta. semilla: semilla fija de la referencia al azar.
     Devuelve un DataFrame con una fila por evento de entrada y columnas al menos:
         pos (int), sentido (str), diferencia (float, NaN si excluido), excluido (bool), motivo (str; vacio si no excluido).

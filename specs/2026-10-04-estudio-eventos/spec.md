@@ -136,3 +136,6 @@ Estas decisiones prevalecen sobre el texto original de las secciones 2 y 3 donde
 - **Deduplicación (§2):** un evento contado bloquea i+1..i+7; un evento en i+8 cuenta. Los eventos suprimidos no bloquean (el bloqueo se mide desde el último evento contado).
 - **Diferencia (§5):** el estadístico del bootstrap por día es la media de la diferencia evento − referencia al azar, con semilla fija.
 - **Universo principal (§1, §6):** XAUT queda en el universo principal con cobertura parcial en E (desde 2025-04-03), decisión de Andrés.
+- **Unidad de celda (§7, 76 celdas):** celda = hipótesis × sentido × temporalidad × bloque, con todos los símbolos juntos. El detalle por símbolo es descriptivo y sin test. Decisión de Andrés. Pendiente de implementar antes de fase 1 (el resumen de este PR todavía agrupa por símbolo).
+- **Exclusión de candidatas al azar (§5):** la referencia excluye solo las velas de la celda, no las de todas las hipótesis. Decisión de Andrés.
+- **Eventos suprimidos (§2, §5):** solo cuentan los eventos contados; las velas de eventos suprimidos por dedup pueden ser candidatas de la referencia. Decisión de Andrés.
