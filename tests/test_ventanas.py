@@ -87,8 +87,8 @@ class RiesgoVivo(unittest.TestCase):
              mock.patch.object(lt, "compute_valid_position_size", return_value=(1.0, 1.0)) as sized, \
              mock.patch.object(lt, "place_entry_with_sl_tp", return_value={"id": "1"}):
             rl.process_new_setups(object(), [setup], {"open_orders": []}, 200.0, 100.0, 0.0, 0, 15, set())
-        self.assertEqual(rl.LIVE_RISK_PCT, 0.01)
-        self.assertEqual(sized.call_args[0][3], 0.01)
+        self.assertEqual(rl.LIVE_RISK_PCT, 0.02)
+        self.assertEqual(sized.call_args[0][3], 0.02)
 
 
 if __name__ == "__main__":

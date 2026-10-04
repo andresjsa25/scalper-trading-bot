@@ -47,8 +47,7 @@ datos, simulación pesimista con costos; ver docs/analisis_ventanas_2026-10.md):
   - V10 solo en Londres (08:00-13:30 UTC, hora de entrada = cierre de la
     vela de señal): R 0,22, PF 1,40, positivo en los 3 períodos. Fuera de esa
     ventana V10 rinde R 0,10 / PF 1,17 y en Asia es negativo.
-  - Riesgo por operación 1% (LIVE_RISK_PCT) mientras se mide el R real en
-    vivo contra el del backtest (0,54 para V1 en estas ventanas).
+  - Riesgo por operación 2% (LIVE_RISK_PCT), con tope duro de 5 USD por operación.
 
 Capital compartido entre las 3 estrategias, topeado en config.MAX_CAPITAL_USDT,
 mismos topes de riesgo de portafolio (30% / 10 operaciones simultáneas).
@@ -75,8 +74,9 @@ V5_LEVERAGE = 50
 V10_LEVERAGE = 15  # mismo config.LEVERAGE que se usó en todo el backtesting de V10
 
 # Riesgo por operación en vivo (fracción del balance), pisa setup.risk_pct.
-# 1% (antes 2%) hasta confirmar en vivo el R medio de las ventanas nuevas.
-LIVE_RISK_PCT = 0.01
+# 2% (decisión de Andrés, 2026-10-04). Antes 1% mientras se medía el R real en vivo.
+# El tope de 5 USD por operación (MAX_RISK_USDT_PER_TRADE en src/live_trading.py) sigue aplicando.
+LIVE_RISK_PCT = 0.02
 
 # Ventanas horarias UTC en minutos del día, [inicio, fin). Sobre signal_datetime
 # (vela donde se llena la entrada) más el offset de la estrategia.
