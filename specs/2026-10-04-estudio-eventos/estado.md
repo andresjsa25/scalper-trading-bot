@@ -1,6 +1,6 @@
 # Estado: estudio de eventos de patrones
 
-Fase actual: lista para merge (PR #11). Resumen por celda, excluidos por motivo, máximos y detalle por símbolo implementados y probados; fases 1 y 2 NO ejecutadas. pytest: 115 pasan. Pendiente antes de fase 1: script de fase 1 y anexo de la spec (spec.md:139) con OK de Andrés.
+Fase actual: lista para revisar (script de fase 1 en PR apilado, NO ejecutado). Fases 1 y 2 sin correr; requieren OK de Andrés (--aprobada-por). pytest: 122 pasan.
 
 ## Registro
 
@@ -133,3 +133,9 @@ Fase actual: lista para merge (PR #11). Resumen por celda, excluidos por motivo,
 - 2026-10-04 · Constructor (rama `estudio-eventos-resumen`) · Decisión del coordinador: el detalle por símbolo es solo descriptivo; se quitan cota_inferior y cota_superior de `resumen_por_simbolo` (la línea anterior de este lote que las describe queda superada). Queda diferencia_media (media simple, sin bootstrap) por costo base y sensibilidades, más n, excluidos y mfe/mae.
 
 - 2026-10-04 · Publicación · PR #11 abierto contra main (rama `estudio-eventos-resumen`, mergeable). CI: sin workflows y sin checks reportados. `tsc`/`npm test` no aplican (repo Python); se usó `python -m pytest -q` (115 pasan). Merge lo hace Andrés.
+
+- 2026-10-04 · Constructor (rama `estudio-eventos-fase1`, apilada sobre `estudio-eventos-resumen` / PR #11) · Script de fase 1 listo para revisar, NO ejecutado. Archivos: `estudio_eventos/fase1.py` y `tests/test_estudio_eventos_fase1.py`. Commits: bf0641e (script con guardas), 601c1b8 (fix: columna `contado` booleana), b051ea5 (tests sintéticos). Guardas: sin `--ejecutar-fase1` solo imprime el plan y no lee ni escribe nada; con el flag exige `--aprobada-por`. Salidas previstas: `docs/estudio-eventos-fase1.md` (tablas) y sección nueva fechada en `docs/estudio-eventos-registro.md` (solo agregar). Chequeo fuerte n + excluidos = crudos por celda. Dedup como fase 0 sobre la serie completa, luego bloque E; suprimidos como excluido/dedup. Criterio: pasa si n_E ≥ 30 y cota inferior base > 0. Pendientes de la vuelta anterior: (a) camino completo crudos → dedup → diferencias → resumen cubierto por test sintético; (b) el anexo de la spec sigue desactualizado; no se tocó.
+  Decisiones del Constructor (a confirmar): (1) la tabla de fase 1 no incluye MFE/MAE, para respetar "sin columnas de precio fuera de la diferencia". (2) `main` sin flag sale con código 0 y no toca datos. (3) pytest: 122 pasan, 0 fallan.
+  Qué falta: aprobación de Andrés para correrlo. Hasta entonces `docs/estudio-eventos-fase1.md` no existe en la rama y el registro no tiene sección de fase 1.
+
+- 2026-10-04 · Publicación · PR #12 abierto (rama `estudio-eventos-fase1`), base `main` porque PR #11 ya estaba mergeado. Estado: lista para revisar; script de fase 1 NO ejecutado. CI: sin workflows. Revisa Andrés.
