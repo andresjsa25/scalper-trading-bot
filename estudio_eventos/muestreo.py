@@ -21,15 +21,17 @@ def deduplicar(eventos: pd.DataFrame, ventana: int = 8) -> pd.DataFrame:
     return pd.concat(partes).reset_index(drop=True)
 
 
-def referencia_azar(df: pd.DataFrame, i_evento: int, excluir: np.ndarray, n: int = 20, semilla: int = 0) -> list:
-    """Posiciones de n velas con la misma hora y bloque (columna 'bloque') que i_evento, sin velas marcadas en 'excluir'. Semilla fija.
+def referencia_azar(df: pd.DataFrame, i_evento: int, sentido: str, excluir: np.ndarray, n: int = 20, semilla: int = 0) -> list:
+    """Posiciones de n velas con la misma hora, bloque (columna 'bloque') y sentido (columna 'sentido') que i_evento, sin velas marcadas en 'excluir'. Semilla fija.
 
+    'sentido' es el del evento ("long"/"short"); df debe traer la columna 'sentido' con la que se filtran las candidatas.
     Si hay menos de n candidatas devuelve lista vacia (el evento no tiene referencia y no se evalua).
     """
     hora = df.index.hour.to_numpy()
     bloque = df["bloque"].to_numpy()
+    sentidos = df["sentido"].to_numpy()
     candidatas = np.flatnonzero((hora == hora[i_evento]) & (bloque == bloque[i_evento])
-                                & ~np.asarray(excluir, dtype=bool))
+                                & (sentidos == sentido) & ~np.asarray(excluir, dtype=bool))
     candidatas = candidatas[candidatas != i_evento]
     if len(candidatas) < n:
         return []

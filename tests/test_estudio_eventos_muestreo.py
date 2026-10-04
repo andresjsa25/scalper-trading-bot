@@ -43,13 +43,14 @@ class TestReferenciaAlAzar:
         # 2800 velas horarias: primeras 2400 en bloque E (100 por hora del dia), resto en C1.
         self.df = velas([(100, 101, 99, 100)] * 2800, inicio="2025-01-01 00:00")
         self.df["bloque"] = ["E"] * 2400 + ["C1"] * 400
+        self.df["sentido"] = "long"
         self.evento = 1212  # hora 12 UTC, bloque E
         rng = np.random.default_rng(5)
         self.excluir = rng.random(2800) < 0.3
         self.excluir[self.evento] = True
 
     def test_veinte_velas_con_misma_hora_y_bloque_sin_eventos(self):
-        res = referencia_azar(self.df, self.evento, self.excluir, n=20, semilla=7)
+        res = referencia_azar(self.df, self.evento, "long", self.excluir, n=20, semilla=7)
         assert len(res) == 20
         assert len(set(res)) == 20
         assert all(self.df.index[p].hour == 12 for p in res)
@@ -62,12 +63,22 @@ class TestReferenciaAlAzar:
         candidatas = [p for p in range(2400) if p % 24 == 12 and p != self.evento][:20]
         excluir = np.ones(2800, dtype=bool)
         excluir[candidatas] = False
-        res = referencia_azar(self.df, self.evento, excluir, n=20, semilla=7)
+        res = referencia_azar(self.df, self.evento, "long", excluir, n=20, semilla=7)
         assert sorted(res) == sorted(candidatas)
 
+    def test_solo_elige_velas_del_mismo_sentido(self):
+        # Hora 12 y bloque E: la mitad de las velas es "short". Con sentido "long" no debe salir ninguna "short".
+        mitad_short = [p for p in range(2400) if p % 24 == 12 and p != self.evento][::2]
+        self.df.loc[self.df.index[mitad_short], "sentido"] = "short"
+        res = referencia_azar(self.df, self.evento, "long", self.excluir, n=20, semilla=7)
+        assert len(res) == 20
+        assert all(self.df["sentido"].iloc[p] == "long" for p in res)
+        res_short = referencia_azar(self.df, self.evento, "short", np.zeros(2800, dtype=bool), n=20, semilla=7)
+        assert all(self.df["sentido"].iloc[p] == "short" for p in res_short)
+
     def test_misma_semilla_mismo_resultado(self):
-        a = referencia_azar(self.df, self.evento, self.excluir, n=20, semilla=7)
-        b = referencia_azar(self.df, self.evento, self.excluir, n=20, semilla=7)
+        a = referencia_azar(self.df, self.evento, "long", self.excluir, n=20, semilla=7)
+        b = referencia_azar(self.df, self.evento, "long", self.excluir, n=20, semilla=7)
         assert a == b
 
 
