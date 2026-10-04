@@ -215,9 +215,11 @@ class TestH5:
         df, i = _h5_df(r=24)
         assert bool(h5(df, "long").iloc[i]) is False
 
-    def test_relleno_con_low_menor_al_de_la_barrida_invalida(self):
+    def test_relleno_con_low_menor_invalida_s_pero_abre_barrida_nueva(self):
+        # Spec literal (decision de Andres): la vela 12 (low 87 < 88) es una barrida nueva S'=12 y la
+        # senal en 13 cuenta para S'. Sin esa barrida, S=11 queda invalidada por low menor.
         df, i = _h5_df(r=13, lo_relleno=87.0)
-        assert bool(h5(df, "long").iloc[i]) is False
+        assert bool(h5(df, "long").iloc[i]) is True
 
     def test_version_base_mas_volumen_en_la_barrida(self):
         df_bajo, i = _h5_df(volumen_s=100.0)

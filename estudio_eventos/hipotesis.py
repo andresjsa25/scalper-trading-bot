@@ -111,15 +111,8 @@ def h5(df: pd.DataFrame, direccion: str, volumen_barrida: bool = False, fvg_rupt
     else:
         ref = piv["pivot_min"].ffill().shift(1).to_numpy()
         fvg = formacion_fvg(df, "short").to_numpy()
-    # Cada pivote se barre una sola vez (primera barrida): una barrida posterior sobre el mismo pivote no abre otra senal.
-    col_piv = "pivot_max" if direccion == "long" else "pivot_min"
-    id_piv = pd.Series(np.where(piv[col_piv].notna(), np.arange(len(df)), np.nan)).ffill().to_numpy()
-    barridos = set()
     out = _vacia(df)
     for s in np.flatnonzero(barridas):
-        if id_piv[s] in barridos:
-            continue
-        barridos.add(id_piv[s])
         if volumen_barrida and not vol[s]:
             continue
         if np.isnan(ref[s]):
