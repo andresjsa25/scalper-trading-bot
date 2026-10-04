@@ -17,7 +17,7 @@ Fase actual: fase 0 corregida con decisiones de Andrés (ver entrada Constructor
 - 2026-10-04 · Constructor · Resolucion de ambiguedades (sin mirar resultados de precio; se decidio con la opcion conservadora cuando habia una clara). Las 15 del Tester:
   (1) RESUELTA: pivote con high/low; empate no es pivote (estricto).
   (2) RESUELTA: vigencia = formado en j in [i-23, i-1] (la ventana de 24 incluye la senal; el borde se toma como el mas corto).
-  (3) RESUELTA segun propuesta del Tester: relleno = velas j+1..i-1; la vela de senal solo cuenta para "tocado". (3) RESUELTA por Andres (corregido despues): en H3 la vela de barrida que cruza la zona no cuenta como relleno.
+  (3) RESUELTA segun propuesta del Tester: relleno = velas j+1..i-1; la vela de senal solo cuenta para "tocado". RESUELTA por Andres (corregido despues): en H3 la vela de barrida que cruza la zona no cuenta como relleno.
   (4) RESUELTA segun propuesta del Tester (solapamiento inclusivo). Corregido despues: el toque es estricto (ver abajo).
   (5) RESUELTA: martillo exige cuerpo > 0 y cierre estrictamente por encima del punto medio (>); mecha >= 2 x cuerpo.
   (6) RESUELTA: menos de 2 pivotes confirmados = no alineada; solo velas con instante de cierre (apertura + duracion) <= instante de la senal.
