@@ -1,6 +1,6 @@
 # Estado: estudio de eventos de patrones
 
-Fase actual: cambios del Constructor sobre fase 0 en rama `estudio-eventos-ajustes` (5 tareas, pendiente de `/revisar`). Fase 0 regenerada. Fases 1 y 2 NO ejecutadas; requieren OK de Andrés. pytest: 95 pasan.
+Fase actual: lista para merge (PR #9). Ajustes aprobados en revisión vuelta 4. Fases 1 y 2 NO ejecutadas. pytest: 95 pasan. Pendientes antes de fase 1: diferencia contra referencia al azar, decisión sobre XAUT.
 
 ## Registro
 
@@ -80,3 +80,5 @@ Fase actual: cambios del Constructor sobre fase 0 en rama `estudio-eventos-ajust
 - 2026-10-04 · Revisor (vuelta 4, rama `estudio-eventos-ajustes`) · Veredicto: Aprobar. Altos: ninguno. Medios abiertos: (1) H3: la vela de señal no cuenta como relleno (`patrones.py:45`); resolución del Constructor, falta decisión de Andrés. (2) las velas suprimidas no reinician el bloqueo de dedup (`muestreo.py:16`); el test cambió por autorización del coordinador, falta confirmación de Andrés. (3) la spec §2 y §3 no refleja las decisiones de Andrés (`spec.md:48, 55`). (4) la diferencia contra la referencia al azar no está implementada; bloquea fase 1. Bajos: test renombrado a `..._dentro_de_i_mas_7`; pytest en estado corregido a 95; `fase0` no escribe la sección de corrección (paso manual); XAUT pendiente de Andrés. Verificado: 76 celdas, Tablas 2a/2b = Tabla 1, registro solo agregar (0 borrados), protegidos sin cambios, 95 pytest.
 
 - 2026-10-04 · Andrés (decisiones finales antes del PR) · (1) H3: la vela de señal no cuenta como relleno; se mantiene. (2) Dedup: los eventos suprimidos no bloquean; solo cuentan los contados. (3) Se agrega a la spec el anexo "decisiones de Andrés" (`spec.md`, final). Pendientes que siguen: XAUT (datos desde 2025-04-03) y la implementación de la diferencia contra el azar, antes de fase 1.
+
+- 2026-10-04 · Publicación · PR #9 abierto contra main (rama `estudio-eventos-ajustes`, mergeable). CI: el repo no tiene workflows y el PR no reporta checks. `tsc`/`npm test` no aplican (repo Python); se usó `python -m pytest -q` (95 pasan). Merge lo hace Andrés.
