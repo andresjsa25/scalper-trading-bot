@@ -97,8 +97,7 @@ def test_resumen_por_simbolo_una_fila_por_simbolo_y_celda_sin_cota_ni_significan
     assert len(res) == 3  # (BTC, E), (ETH, E), (BTC, C1)
     claves = res[["simbolo", "hipotesis", "version", "sentido", "tf", "bloque"]].drop_duplicates()
     assert len(claves) == 3
-    # las cotas son columnas (costo base y sensibilidades), pero no hay significancia ni p-valor
-    assert not any(("signif" in c) or ("p_valor" in c) for c in res.columns)
+    assert not any(("cota" in c) or ("signif" in c) or ("p_valor" in c) for c in res.columns)
 
 
 def test_resumen_por_simbolo_tres_costos_n_una_vez_y_sin_filas_repetidas_por_costo():
@@ -117,6 +116,4 @@ def test_resumen_por_simbolo_tres_costos_n_una_vez_y_sin_filas_repetidas_por_cos
     assert r["mfe_medio"] != r["mfe_medio"]  # sin columna mfe en el df: NaN, como en el agregado
     for tag in ("base", "sens0008", "sens0014"):
         assert f"diferencia_media_{tag}" in res.columns
-        assert f"cota_inferior_{tag}" in res.columns
-        assert f"cota_superior_{tag}" in res.columns
     assert r["diferencia_media_base"] == pytest.approx(0.5)  # una sola diferencia contada

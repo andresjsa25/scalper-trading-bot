@@ -196,11 +196,10 @@ def resumen_agregado(df: pd.DataFrame, semilla: int = 0, celdas: list | None = N
 
 
 def resumen_por_simbolo(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
-    """Detalle descriptivo: una fila por (simbolo, hipotesis, version, tf, sentido, bloque). Sin costo en la clave.
+    """Detalle solo descriptivo: una fila por (simbolo, hipotesis, version, tf, sentido, bloque). Sin costo en la clave.
 
-    Mismo criterio que resumen_agregado: n, excluidos_* y mfe/mae salen de las filas de costo base (una vez);
-    diferencia_media, cota_inferior y cota_superior van como columnas para el costo base (*_base) y las
-    sensibilidades (*_sens0008, *_sens0014), bootstrap por dia con semilla fija. Descriptivo: sin significancia.
+    n, excluidos_* y mfe/mae salen de las filas de costo base (una vez). diferencia_media (media simple de los no
+    excluidos, sin bootstrap) va por costo base (*_base) y sensibilidades (*_sens0008, *_sens0014). Sin cota ni significancia.
     """
     claves = ["simbolo", *CLAVE_CELDA, "bloque"]
     tags = ["base", *COSTOS_SENSIBILIDAD]
@@ -213,8 +212,7 @@ def resumen_por_simbolo(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
         fila["mae_medio"] = _media_no_excluidos(base, "mae")
         for tag, costo in [("base", COSTO_BASE), *COSTOS_SENSIBILIDAD.items()]:
             sub = grupo[np.isclose(grupo["costo"].astype(float), costo)]
-            media, lo, hi = intervalo_diferencia(sub, semilla=semilla)
-            fila.update({f"diferencia_media_{tag}": media, f"cota_inferior_{tag}": lo, f"cota_superior_{tag}": hi})
+            fila[f"diferencia_media_{tag}"] = _media_no_excluidos(sub, "diferencia")
         filas.append(fila)
-    columnas_costo = [f"{s}_{t}" for t in tags for s in ["diferencia_media", "cota_inferior", "cota_superior"]]
+    columnas_costo = [f"diferencia_media_{t}" for t in tags]
     return pd.DataFrame(filas, columns=claves + CONTEOS + ["mfe_medio", "mae_medio"] + columnas_costo)

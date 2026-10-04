@@ -129,3 +129,5 @@ Fase actual: resumen por celda (76 celdas, excluidos por motivo, máximos ATR y 
   (a) n + excluidos depende del contrato de entrada del llamador (los crudos deben pasar por deduplicar antes de diferencias y resumen). Falta test de camino completo crudos → deduplicar → diferencias → resumen, y un chequeo que falle fuerte si el llamador no cumple el contrato. En fase 1.
   (b) Anexo de la spec desactualizado (spec.md:139). Requiere cambio de spec con OK de Andrés.
   (c) `_retornos` y `referencia_azar` recalculan arrays por evento (rendimiento, no crítico).
+
+- 2026-10-04 · Constructor (rama `estudio-eventos-resumen`) · Decisión del coordinador: el detalle por símbolo es solo descriptivo; se quitan cota_inferior y cota_superior de `resumen_por_simbolo` (la línea anterior de este lote que las describe queda superada). Queda diferencia_media (media simple, sin bootstrap) por costo base y sensibilidades, más n, excluidos y mfe/mae.
