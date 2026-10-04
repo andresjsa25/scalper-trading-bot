@@ -1,6 +1,6 @@
 # Estado: estudio de eventos de patrones
 
-Fase actual: fase 0 construida; revisión vuelta 1 con cambios necesarios (ver registro). Fases 1 y 2 NO ejecutadas. pytest: 87 pasan (fixture de `TestH2::test_version_sin_fvg` corregido en 8038277). Pendiente: decisión de Andrés sobre ambigüedades abiertas y sobre la salida de fase 0.
+Fase actual: fase 0 corregida con decisiones de Andrés (ver entrada Constructor 2026-10-04 "corrección"). Fases 1 y 2 NO ejecutadas. pytest: 89 pasan. Pendiente: revisión del Revisor sobre la corrección; decidir la fase 1 (definiciones de evaluación) antes de correrla.
 
 ## Registro
 
@@ -17,8 +17,8 @@ Fase actual: fase 0 construida; revisión vuelta 1 con cambios necesarios (ver r
 - 2026-10-04 · Constructor · Resolucion de ambiguedades (sin mirar resultados de precio; se decidio con la opcion conservadora cuando habia una clara). Las 15 del Tester:
   (1) RESUELTA: pivote con high/low; empate no es pivote (estricto).
   (2) RESUELTA: vigencia = formado en j in [i-23, i-1] (la ventana de 24 incluye la senal; el borde se toma como el mas corto).
-  (3) RESUELTA segun propuesta del Tester: relleno = velas j+1..i-1; la vela de senal solo cuenta para "tocado". ABIERTA: en H3 (sin tocado) la vela de barrida que cruza la zona no cuenta como relleno. La alternativa mas conservadora (contarla) no la probé contra los tests; Andrés decide.
-  (4) RESUELTA segun propuesta del Tester (solapamiento inclusivo). ABIERTA menor: el estricto da menos eventos; el efecto es chico y queda para Andrés.
+  (3) RESUELTA segun propuesta del Tester: relleno = velas j+1..i-1; la vela de senal solo cuenta para "tocado". (3) RESUELTA por Andres (corregido despues): en H3 la vela de barrida que cruza la zona no cuenta como relleno.
+  (4) RESUELTA segun propuesta del Tester (solapamiento inclusivo). Corregido despues: el toque es estricto (ver abajo).
   (5) RESUELTA: martillo exige cuerpo > 0 y cierre estrictamente por encima del punto medio (>); mecha >= 2 x cuerpo.
   (6) RESUELTA: menos de 2 pivotes confirmados = no alineada; solo velas con instante de cierre (apertura + duracion) <= instante de la senal.
   (7) RESUELTA: no altera nada. Un pivote confirmado en i no puede ser barrido en i (su low es minimo de la ventana).
@@ -30,7 +30,7 @@ Fase actual: fase 0 construida; revisión vuelta 1 con cambios necesarios (ver r
   (13) RESUELTA: estadistico = media de todos los eventos; remuestreo de dias con reemplazo ponderando sus eventos.
   (14) RESUELTA: fvg_en devuelve el FVG valido mas reciente; H usa "existe alguna".
   (15) RESUELTA: las versiones de la seccion 3 se implementan tal cual (H3 sin FVG = fvg=False). No hay negativo aislado que probar.
-  Nueva, agregada para pasar el test de H5 (`relleno_con_low_menor`): cada pivote se barre una sola vez (primera barrida). Sin esto, la vela de relleno con low 87 abre una barrida nueva y una senal en S+2. ABIERTA: confirmar con Andres o el Tester; la spec literal daria otra senal.
+  Nueva, agregada para pasar el test de H5 (`relleno_con_low_menor`): cada pivote se barre una sola vez (primera barrida). RETIRADA por decision de Andres (ver entrada de correccion abajo).
   Otras (no listadas): Wilder con ewm (adjust=False), primeras n filas NaN; diario para estructura en 4h = 1D armado desde 1h, solo dias con 24 velas.
 
 - 2026-10-04 · Constructor · Fase 0 ejecutada con `python -m estudio_eventos.fase0` (solo conteos; 1 min 51 s). Universo principal: ADA, BNB, BTC, ETH, HYPE, LINK, SOL, XAUT. Secundario: NC* (solo C1 y C2). Salida: `docs/estudio-eventos-frecuencia.md` y `docs/estudio-eventos-registro.md` (76 celdas). Celdas con E < 30 marcadas "no evaluable". Sin listados crudos, sin columnas de resultado.
@@ -38,3 +38,15 @@ Fase actual: fase 0 construida; revisión vuelta 1 con cambios necesarios (ver r
 - Ideas para el Proponente (no implementadas): (i) la lista de ambiguedades ABIERTAS (3, 4 y la regla de pivote barrido una vez) necesita decision antes de la fase 1; (ii) H1 completa y H2/H3 completas dan muy pocos eventos en E (1, 11 y 3 en 1h): con el filtro FVG de la spec casi todas las celdas quedan no evaluables; conviene decidirlo antes de correr la fase 1, sin cambiar las definiciones sobre resultados.
 
 - 2026-10-04 · Revisor (vuelta 1) · Veredicto: Cambios necesarios. Verificado sin hallazgos: no se tocan `run_live_trading.py`, `src/`, `data/`, `docs/protocolo-variantes.md` ni el protocolo v1; fase 0 solo tiene conteos; no hay salidas de fases 1 ni 2; no hay listados crudos. Altos: (1) fase 0 corrida con ambigüedades abiertas (3) y (4), y con la regla nueva de barrida única sin decisión de Andrés (`hipotesis.py`); si Andrés cambia alguna, corregir, volver a correr fase 0 y registrar como corrección fechada. (2) referencia al azar sin filtro por sentido, criterio 4 incumplido (`muestreo.py`). Medios: Tabla 2 de frecuencia no cubre hipótesis, versión, temporalidad y sentido por mes (`fase0.py`). Bajos: este estado (corregido arriba); `docs/memoria.md` no creado (no pedido); el registro de ideas del Constructor marca como "decidido" puntos que son de Andrés.
+
+- 2026-10-04 · Constructor (corrección por decisiones de Andrés) · Ramas: `estudio-eventos`. Commits: b363448 (quitar barrida única), 2f00761 (toque estricto), y el de docs de fase 0 y registro. No se borró el registro anterior: la corrección está en `docs/estudio-eventos-registro.md`, sección "Corrección 2026-10-04".
+  Decisiones aplicadas:
+  (1) Regla de barrida única RETIRADA por decisión de Andrés. H5 sigue la spec literal: cada barrida en S abre su señal si la primera vela en S+1..S+12 cierra sobre el último máximo confirmado antes de S sin low menor al de S (espejo para short). Test `relleno_con_low_menor` ajustado a la spec literal: la vela con low 87 es una barrida nueva S'=12 y la señal en 13 cuenta para S'. Único test cambiado.
+  (2) H3: la vela de barrida que cruza la zona de Fibonacci NO cuenta como relleno. Ya era así en el código (el relleno mira j+1..i-1 y H3 usa tocado=False); queda confirmado. Ambigüedad (3) RESUELTA.
+  (3) Toque de zona ESTRICTO: la vela de señal cruza el interior de la zona (bajo < techo de zona y alto > piso de zona); tocar solo el borde no cuenta. Solo afecta al toque de la señal; el relleno de velas previas sigue inclusivo (no lo pidió Andrés). Agregado un test de borde (`test_fvg_toque_solo_en_el_borde_no_cuenta`). Ambigüedad (4) RESUELTA.
+  (4) Sentido en referencia al azar: sin cambios.
+  pytest: 89 pasan.
+  Fase 0 nueva corrida (`python -m estudio_eventos.fase0`): 83 celdas en 18 filas cambian. Las más grandes son H5 base y variantes (ej. H5 base 1h long prin_E 261→352). H1 sin_rechazo 1h short sec_C1 19→18 y H2 sin_volumen 1h short prin_C2 41→40. H5 base_volumen_barrida 4h long y short pasan a evaluable (prin_E 32 y 38).
+  Hallazgo: `fase0` omite las celdas con cero eventos en todos los universos. Por eso H1 con_estructura_mayor 4h long no figuraba (la declarada son 76 celdas). Se agregó como fila de cero en la sección de corrección; el script no se cambió.
+  Pendiente para la fase 1: revisión del Revisor de la corrección.
+  Ideas para el Proponente: (i) decidir si el relleno de velas previas usa solapamiento estricto también (hoy inclusivo; afecta H1, H2 y H3 de forma leve); (ii) `fase0` debería escribir las celdas en cero para que el registro tenga 76 filas; (iii) la línea de corrección en `docs/estudio-eventos-frecuencia.md` se pierde si se vuelve a generar el archivo (el script lo sobrescribe); conviene moverla al registro.
