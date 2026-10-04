@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 
+from estudio_eventos.fase0 import PRINCIPAL
 from estudio_eventos.indicadores import atr
 from estudio_eventos.muestreo import bootstrap_dia, referencia_azar
 
@@ -155,11 +156,13 @@ def _media_no_excluidos(grupo: pd.DataFrame, columna: str) -> float:
     return float(valores.mean()) if len(valores) else np.nan
 
 
-def resumen_agregado(df: pd.DataFrame, semilla: int = 0, celdas: list | None = None) -> pd.DataFrame:
-    """Una fila por celda agregada SIN simbolo: hipotesis, version, sentido, tf, bloque, costo (todos los simbolos juntos).
+def resumen_agregado(df: pd.DataFrame, semilla: int = 0, celdas: list | None = None, universo: list = PRINCIPAL) -> pd.DataFrame:
+    """Una fila por celda agregada SIN simbolo: hipotesis, version, sentido, tf (todos los simbolos del universo juntos).
 
     df: filas de diferencias de varios simbolos, con columnas COLUMNAS_CELDA + 'simbolo', 'dia', 'diferencia', 'excluido' y 'motivo'.
         Los eventos suprimidos por dedup se pasan como filas con excluido=True y motivo="dedup".
+    universo: simbolos que entran. Por defecto cripto (PRINCIPAL); los NC* van en otra llamada con universo=SECUNDARIO
+        (resumen aparte, decision de Andres: NC* no entra en las 76 filas ni en el criterio de confirmacion).
     Motivos de exclusion (motivo de diferencias -> columna): "dedup" -> excluidos_dedup;
         "menos de 20 candidatas validas" -> excluidos_sin_referencia;
         "sin vela +8" y "ATR no disponible" -> excluidos_datos_faltantes.
@@ -168,6 +171,7 @@ def resumen_agregado(df: pd.DataFrame, semilla: int = 0, celdas: list | None = N
         y las sensibilidades (*_sens0008_*, *_sens0014_*, solo lectura): diferencia_media, cota_inferior, cota_superior
         (bootstrap por dia, semilla fija). Conteos (n, excluidos_*) de las filas de costo base: n + excluidos = filas de la celda.
     """
+    df = df[df["simbolo"].isin(universo)]  # el resultado no tiene simbolo: sin este filtro NC* se sumaria a cripto
     if celdas is None:  # por defecto, las celdas presentes; fase 1 pasa celdas_declaradas() para las 76 (incluidas las de 0 eventos)
         celdas = sorted(set(map(tuple, df[["hipotesis", "version", "tf", "sentido"]].drop_duplicates().to_numpy())))
     filas = []
