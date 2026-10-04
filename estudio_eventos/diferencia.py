@@ -94,3 +94,35 @@ def resumen_celdas(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
         filas.append({**dict(zip(COLUMNAS_CELDA, clave)), "n": n,
                       "diferencia_media": media, "cota_inferior": lo, "cota_superior": hi})
     return pd.DataFrame(filas, columns=COLUMNAS_CELDA + ["n", "diferencia_media", "cota_inferior", "cota_superior"])
+
+
+def maximos_atr(df: pd.DataFrame, i: int, sentido: str) -> tuple:
+    """(mfe, mae) descriptivos en unidades de ATR14[i], horizonte i+1..i+8, sin costos, entrada = open[i+1].
+
+    long:  mfe = (max(high[i+1..i+8]) - open[i+1]) / ATR14[i];  mae = (open[i+1] - min(low[i+1..i+8])) / ATR14[i]
+    short: mfe = (open[i+1] - min(low[i+1..i+8])) / ATR14[i];  mae = (max(high[i+1..i+8]) - open[i+1]) / ATR14[i]
+    mae positivo = en contra. Sin vela i+8 o sin ATR: (NaN, NaN). El motivo "datos faltantes" lo asigna el llamador.
+    """
+    raise NotImplementedError
+
+
+def resumen_agregado(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
+    """Una fila por celda agregada SIN simbolo: hipotesis, version, sentido, tf, bloque, costo (todos los simbolos juntos).
+
+    df: filas de diferencias de varios simbolos, con columnas COLUMNAS_CELDA + 'simbolo', 'dia', 'diferencia', 'excluido' y 'motivo'.
+        Los eventos suprimidos por dedup se pasan como filas con excluido=True y motivo="dedup".
+    Motivos de exclusion (motivo de diferencias -> columna): "dedup" -> excluidos_dedup;
+        "menos de 20 candidatas validas" -> excluidos_sin_referencia;
+        "sin vela +8" y "ATR no disponible" -> excluidos_datos_faltantes.
+    Columnas: COLUMNAS_CELDA + n (no excluidos), excluidos_dedup, excluidos_sin_referencia, excluidos_datos_faltantes,
+        diferencia_media, cota_inferior, cota_superior (bootstrap por dia, semilla fija). Invariante: n + excluidos = filas de la celda.
+    """
+    raise NotImplementedError
+
+
+def resumen_por_simbolo(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
+    """Detalle descriptivo: el mismo conteo que resumen_agregado pero una fila por (simbolo, celda). Sin cota ni significancia.
+
+    Columnas: simbolo + COLUMNAS_CELDA + n, excluidos_dedup, excluidos_sin_referencia, excluidos_datos_faltantes, diferencia_media.
+    """
+    raise NotImplementedError
