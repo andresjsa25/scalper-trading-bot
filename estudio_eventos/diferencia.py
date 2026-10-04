@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 from estudio_eventos.indicadores import atr
-from estudio_eventos.muestreo import referencia_azar
+from estudio_eventos.muestreo import bootstrap_dia, referencia_azar
 
 HORIZONTE = 8
 
@@ -66,3 +66,11 @@ def diferencias(df: pd.DataFrame, eventos: pd.DataFrame, costo: float, semilla: 
                 fila["diferencia"] = float(ret[pos] - ret[cands].mean())
         filas.append(fila)
     return pd.DataFrame(filas, columns=["pos", "sentido", "dia", "diferencia", "excluido", "motivo"])
+
+
+def intervalo_diferencia(res: pd.DataFrame, semilla: int = 0) -> tuple:
+    """(media, cota_inf, cota_sup) 95% por dia de la 'diferencia' de los eventos no excluidos. Semilla fija."""
+    validos = res.loc[~res["excluido"].astype(bool)]
+    if validos.empty:
+        return (np.nan, np.nan, np.nan)
+    return bootstrap_dia(validos, "diferencia", semilla=semilla)
