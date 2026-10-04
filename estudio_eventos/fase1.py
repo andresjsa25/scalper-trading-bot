@@ -43,7 +43,7 @@ def _celdas_simbolo(simbolo: str, horaria: pd.DataFrame, cuatro: pd.DataFrame):
             ev["simbolo"], ev["tf"], ev["hipotesis"], ev["version"] = simbolo, tf, hip, version
             cont = deduplicar(ev[["simbolo", "tf", "sentido", "pos"]])
             contadas = set(zip(cont["sentido"], cont["pos"]))
-            ev["contado"] = [(s, p) in contadas for s, p in zip(ev["sentido"], ev["pos"])]
+            ev["contado"] = np.array([(s, p) in contadas for s, p in zip(ev["sentido"], ev["pos"])], dtype=bool)
             ev["bloque"] = bloque_de(df.index[ev["pos"].to_numpy(dtype=int)])
             yield tf, hip, version, df, ev[ev["bloque"] == BLOQUE].reset_index(drop=True)
 
