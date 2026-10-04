@@ -1,6 +1,6 @@
 # Estado: estudio de eventos de patrones
 
-Fase actual: resumen por celda (76 celdas, excluidos por motivo, máximos ATR y detalle por símbolo) implementado en rama `estudio-eventos-resumen`; fases 1 y 2 NO ejecutadas. pytest: 108 pasan. Pendientes antes de fase 1: ver entrada del Constructor (resumen).
+Fase actual: lista para merge (PR #11). Resumen por celda, excluidos por motivo, máximos y detalle por símbolo implementados y probados; fases 1 y 2 NO ejecutadas. pytest: 115 pasan. Pendiente antes de fase 1: script de fase 1 y anexo de la spec (spec.md:139) con OK de Andrés.
 
 ## Registro
 
@@ -131,3 +131,5 @@ Fase actual: resumen por celda (76 celdas, excluidos por motivo, máximos ATR y 
   (c) `_retornos` y `referencia_azar` recalculan arrays por evento (rendimiento, no crítico).
 
 - 2026-10-04 · Constructor (rama `estudio-eventos-resumen`) · Decisión del coordinador: el detalle por símbolo es solo descriptivo; se quitan cota_inferior y cota_superior de `resumen_por_simbolo` (la línea anterior de este lote que las describe queda superada). Queda diferencia_media (media simple, sin bootstrap) por costo base y sensibilidades, más n, excluidos y mfe/mae.
+
+- 2026-10-04 · Publicación · PR #11 abierto contra main (rama `estudio-eventos-resumen`, mergeable). CI: sin workflows y sin checks reportados. `tsc`/`npm test` no aplican (repo Python); se usó `python -m pytest -q` (115 pasan). Merge lo hace Andrés.
