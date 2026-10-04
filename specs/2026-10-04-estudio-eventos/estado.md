@@ -1,6 +1,6 @@
 # Estado: estudio de eventos de patrones
 
-Fase actual: lista para merge (PR #8). Fase 0 construida y revisada (2 vueltas, aprobada). Fases 1 y 2 NO ejecutadas; requieren OK de Andrés. pytest: 89 pasan. Pendientes antes de fase 1: ver registro de revisión vuelta 2.
+Fase actual: cambios del Constructor sobre fase 0 en rama `estudio-eventos-ajustes` (5 tareas, pendiente de `/revisar`). Fase 0 regenerada. Fases 1 y 2 NO ejecutadas; requieren OK de Andrés. pytest: 91 pasan.
 
 ## Registro
 
@@ -54,3 +54,15 @@ Fase actual: lista para merge (PR #8). Fase 0 construida y revisada (2 vueltas, 
 - 2026-10-04 · Revisor (vuelta 2) · Veredicto: Aprobar. Altos: ninguno. Verificado: 75 celdas recalculadas + la celda de cero coinciden con el registro; 89 pytest; protegidos sin cambios; decisiones de Andrés aplicadas en código. Medios abiertos, no bloquean la PR; deben resolverse antes de fase 1: (a) el bootstrap mide la media de eventos, no la diferencia contra el azar que pide la spec §5 (`muestreo.py`); decidir si se cambia el estadístico o se aprueba la desviación; (b) la tabla 2 de frecuencia no tiene hipótesis, versión, temporalidad y sentido por mes (spec §5); (c) la tabla 1 no tiene la celda de cero eventos (H1 con_estructura_mayor 4h long), aunque sí está en el registro. Bajos abiertos: (d) vigencia del FVG busca j en [i-23, i-1], la spec dice "últimas 24 velas" (incluiría i); afecta solo H3 (`patrones.py:38`), decisión a confirmar por Andrés; (e) relleno de velas previas inclusivo mientras la señal es de toque estricto (`patrones.py:49`), decidir por Andrés; (f) `docs/memoria.md` no existe (no pedido en esta tarea).
 
 - 2026-10-04 · Publicación · PR #8 abierto contra main (rama `estudio-eventos`, mergeable). CI: el repo no tiene workflows (`.github/workflows` no existe) y el PR no reporta checks. `npx tsc --noEmit` y `npm test` no aplican (repo Python, sin `package.json`/`tsconfig.json`); se reemplazaron por `python -m pytest -q` (89 pasan). Merge lo hace Andrés.
+
+- 2026-10-04 · Constructor (rama `estudio-eventos-ajustes`, pedido de Andrés) · Cinco cambios, un commit cada uno:
+  1. Relleno de FVG estricto (`3219d60`): una vela rellena la zona solo si cruza el interior (low < techo y high > piso). Test de borde nuevo. Spec-literal: §3 dice "operado dentro de la zona"; la regla de borde la fijó Andrés en este pedido.
+  2. Bootstrap por día sobre la diferencia (`8572805`): el estadístico es la media de las diferencias (evento − media de su referencia al azar). `bootstrap_dia` recibe esa diferencia por evento. Spec-literal (§5). Falta en código el cálculo de la diferencia contra la referencia: va en fase 1, no en fase 0. Item (13) actualizado como cambiado por decisión de Andrés.
+  3. Fase 0 con 76 celdas (`ae1e179`): `tabla_celdas` parte de las celdas declaradas y completa con cero. Spec-literal (§7). Decisión del Constructor (confirmar): `fase0` ya no aborta si el registro existe; avisa y no lo toca (solo agregar). Las filas nuevas van en la sección "Corrección 2026-10-04 (2)". Cambian 12 celdas (todas en H1 sin_rechazo, H2 completa/sin_adx/sin_volumen, H3 sin_fibonacci/sin_volumen, por el relleno estricto); ninguna cambia de evaluable. Registro: 76 filas en la sección (2) y 76 en la sección de corrección anterior; la primera tabla del registro sigue con 75 (sin la celda cero, no se edita).
+  4. Tabla 2 completa (`ad2ab00`): `docs/estudio-eventos-frecuencia.md` tiene Tabla 2a (1h) y 2b (4h), una fila por (símbolo, mes, bloque) y una columna por hipótesis/versión/sentido, con ceros. Spec-literal (§5). Formato separado por temporalidad: decisión del Constructor (el pedido lo permitía). Verificado: las sumas por celda coinciden con la tabla 1.
+  5. Nota de corrección movida al registro (`4e9383c`): queda en la sección "Corrección 2026-10-04" del registro; el generador de frecuencia ya no la escribe.
+  Decisiones pendientes de Andrés:
+  - XAUT: la spec dice que está en el universo principal con datos en E, pero sus datos empiezan 2025-04-03 (E cubre 2025-01-01 a 2025-08-01). Decisión de Andrés pendiente; no se cambió nada.
+  - Vigencia del FVG (Revisor, punto d): hoy busca j en [i-23, i-1] (24 velas con la señal); la spec dice "últimas 24 velas". Pendiente de confirmar. Afecta H3.
+  - Confirmar la decisión 3 (script que no aborta con registro existente).
+  Ideas para el Proponente: (i) implementar en fase 1 el cálculo de la diferencia contra la referencia y pasarla a `bootstrap_dia`; (ii) `fase0` ya no regenera el registro: si se vuelve a correr, las filas nuevas hay que agregarlas a mano en una sección de corrección.
