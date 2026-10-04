@@ -196,17 +196,25 @@ def resumen_agregado(df: pd.DataFrame, semilla: int = 0, celdas: list | None = N
 
 
 def resumen_por_simbolo(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
-    """Detalle descriptivo: el mismo conteo que resumen_agregado pero una fila por (simbolo, celda). Sin cota ni significancia.
+    """Detalle descriptivo: una fila por (simbolo, hipotesis, version, tf, sentido, bloque). Sin costo en la clave.
 
-    Columnas: simbolo + COLUMNAS_CELDA + n, excluidos_dedup, excluidos_sin_referencia, excluidos_datos_faltantes, diferencia_media.
+    Mismo criterio que resumen_agregado: n, excluidos_* y mfe/mae salen de las filas de costo base (una vez);
+    diferencia_media, cota_inferior y cota_superior van como columnas para el costo base (*_base) y las
+    sensibilidades (*_sens0008, *_sens0014), bootstrap por dia con semilla fija. Descriptivo: sin significancia.
     """
-    claves = ["simbolo"] + COLUMNAS_CELDA
+    claves = ["simbolo", *CLAVE_CELDA, "bloque"]
+    tags = ["base", *COSTOS_SENSIBILIDAD]
     filas = []
     for clave, grupo in df.groupby(claves, sort=True, dropna=False):
         fila = dict(zip(claves, clave))
-        fila.update(_conteos(grupo))
-        fila["diferencia_media"] = _media_no_excluidos(grupo, "diferencia")
-        fila["mfe_medio"] = _media_no_excluidos(grupo, "mfe")
-        fila["mae_medio"] = _media_no_excluidos(grupo, "mae")
+        base = grupo[np.isclose(grupo["costo"].astype(float), COSTO_BASE)]
+        fila.update(_conteos(base))
+        fila["mfe_medio"] = _media_no_excluidos(base, "mfe")
+        fila["mae_medio"] = _media_no_excluidos(base, "mae")
+        for tag, costo in [("base", COSTO_BASE), *COSTOS_SENSIBILIDAD.items()]:
+            sub = grupo[np.isclose(grupo["costo"].astype(float), costo)]
+            media, lo, hi = intervalo_diferencia(sub, semilla=semilla)
+            fila.update({f"diferencia_media_{tag}": media, f"cota_inferior_{tag}": lo, f"cota_superior_{tag}": hi})
         filas.append(fila)
-    return pd.DataFrame(filas, columns=claves + CONTEOS + ["diferencia_media", "mfe_medio", "mae_medio"])
+    columnas_costo = [f"{s}_{t}" for t in tags for s in ["diferencia_media", "cota_inferior", "cota_superior"]]
+    return pd.DataFrame(filas, columns=claves + CONTEOS + ["mfe_medio", "mae_medio"] + columnas_costo)
