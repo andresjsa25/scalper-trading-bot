@@ -55,8 +55,9 @@ def diferencias(df: pd.DataFrame, eventos: pd.DataFrame, costo: float, semilla: 
     for pos, sentido in zip(posiciones, eventos["sentido"].to_numpy()):
         ret = _retornos(df, sentido, costo)
         candidatas_excluidas = marcadas | ~np.isfinite(ret)
+        mfe, mae = maximos_atr(df, int(pos), sentido)
         fila = {"pos": int(pos), "sentido": sentido, "dia": df.index[pos].strftime("%Y-%m-%d"),
-                "diferencia": np.nan, "excluido": False, "motivo": ""}
+                "diferencia": np.nan, "excluido": False, "motivo": "", "mfe": mfe, "mae": mae}
         if pos + HORIZONTE >= n_velas:
             fila.update(excluido=True, motivo="sin vela +8")
         elif not np.isfinite(ret[pos]):
@@ -68,7 +69,7 @@ def diferencias(df: pd.DataFrame, eventos: pd.DataFrame, costo: float, semilla: 
             else:
                 fila["diferencia"] = float(ret[pos] - ret[cands].mean())
         filas.append(fila)
-    return pd.DataFrame(filas, columns=["pos", "sentido", "dia", "diferencia", "excluido", "motivo"])
+    return pd.DataFrame(filas, columns=["pos", "sentido", "dia", "diferencia", "excluido", "motivo", "mfe", "mae"])
 
 
 def intervalo_diferencia(res: pd.DataFrame, semilla: int = 0) -> tuple:
@@ -103,7 +104,17 @@ def maximos_atr(df: pd.DataFrame, i: int, sentido: str) -> tuple:
     short: mfe = (open[i+1] - min(low[i+1..i+8])) / ATR14[i];  mae = (max(high[i+1..i+8]) - open[i+1]) / ATR14[i]
     mae positivo = en contra. Sin vela i+8 o sin ATR: (NaN, NaN). El motivo "datos faltantes" lo asigna el llamador.
     """
-    raise NotImplementedError
+    if i + HORIZONTE >= len(df):
+        return (np.nan, np.nan)
+    a = float(atr(df).iloc[i])
+    if not np.isfinite(a) or a <= 0:
+        return (np.nan, np.nan)
+    entrada = float(df["open"].iloc[i + 1])
+    maximo = float(df["high"].iloc[i + 1: i + 1 + HORIZONTE].max())
+    minimo = float(df["low"].iloc[i + 1: i + 1 + HORIZONTE].min())
+    if sentido == "long":
+        return ((maximo - entrada) / a, (entrada - minimo) / a)
+    return ((entrada - minimo) / a, (maximo - entrada) / a)
 
 
 def resumen_agregado(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
