@@ -31,3 +31,24 @@ def test_intervalo_ignora_excluidos():
     media, _, _ = intervalo_diferencia(res, semilla=11)
     validos = res.loc[~res["excluido"]]
     assert media == float(validos["diferencia"].mean())
+
+
+def test_resumen_celdas_una_fila_por_celda_y_contiene_la_media():
+    from estudio_eventos.diferencia import resumen_celdas
+
+    partes = []
+    for hipotesis, dif, seed in (("H1", 0.5, 1), ("H2", -0.3, 2)):
+        r = _res(seed=seed)
+        r["diferencia"] = r["diferencia"] + dif
+        r["simbolo"], r["tf"], r["sentido"] = "BTC", "1h", "long"
+        r["hipotesis"], r["version"], r["bloque"], r["costo"] = hipotesis, "completa", "prin_E", 0.0011
+        partes.append(r)
+    res = pd.concat(partes, ignore_index=True)
+
+    tabla = resumen_celdas(res, semilla=3)
+    assert len(tabla) == 2
+    assert list(tabla.columns) == ["simbolo", "tf", "sentido", "hipotesis", "version", "bloque", "costo",
+                                   "n", "diferencia_media", "cota_inferior", "cota_superior"]
+    for _, fila in tabla.iterrows():
+        assert fila["cota_inferior"] <= fila["diferencia_media"] <= fila["cota_superior"]
+        assert fila["n"] == int((~res.loc[res["hipotesis"] == fila["hipotesis"], "excluido"]).sum())

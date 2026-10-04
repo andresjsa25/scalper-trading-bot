@@ -74,3 +74,20 @@ def intervalo_diferencia(res: pd.DataFrame, semilla: int = 0) -> tuple:
     if validos.empty:
         return (np.nan, np.nan, np.nan)
     return bootstrap_dia(validos, "diferencia", semilla=semilla)
+
+
+COLUMNAS_CELDA = ["simbolo", "tf", "sentido", "hipotesis", "version", "bloque", "costo"]
+
+
+def resumen_celdas(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
+    """Una fila por celda: n (no excluidos), diferencia_media y cota 95% por dia (semilla fija).
+
+    df: diferencias de varias celdas, con columnas COLUMNAS_CELDA, 'dia', 'diferencia' y 'excluido'.
+    """
+    filas = []
+    for clave, grupo in df.groupby(COLUMNAS_CELDA, sort=True, dropna=False):
+        media, lo, hi = intervalo_diferencia(grupo, semilla=semilla)
+        n = int((~grupo["excluido"].astype(bool)).sum())
+        filas.append({**dict(zip(COLUMNAS_CELDA, clave)), "n": n,
+                      "diferencia_media": media, "cota_inferior": lo, "cota_superior": hi})
+    return pd.DataFrame(filas, columns=COLUMNAS_CELDA + ["n", "diferencia_media", "cota_inferior", "cota_superior"])
