@@ -4,7 +4,7 @@
 
 ## Resumen para Andrés
 
-- **Qué se hace:** se definen 3 hipótesis de patrón con reglas exactas (las tuyas: RSI sobrevendido + FVG + vela de rechazo + estructura de 4h; ADX + Bollinger + FVG + volumen; barrida de liquidez + volumen + Fibonacci + FVG). Se cuenta cada cuánto se dan y se mide qué hace el precio después, comparado con entradas al azar en los mismos activos y horarios.
+- **Qué se hace:** se definen 5 hipótesis de patrón con reglas exactas (las tuyas: RSI sobrevendido + FVG + vela de rechazo + estructura de 4h; ADX + Bollinger + FVG + volumen; barrida de liquidez + volumen + Fibonacci + FVG; y dos agregadas: compresión de volatilidad y ruptura, y cambio de estructura tras una barrida). Se cuenta cada cuánto se dan y se mide qué hace el precio después, comparado con entradas al azar en los mismos activos y horarios.
 - **Qué NO se hace:** no se busca "el punto más bajo o más alto" (solo se reconoce mirando hacia atrás). Se mide si, dado un patrón, el movimiento siguiente es mejor que el azar, ya descontando costos.
 - **Cómo se evita engañarnos:** reglas y valores escritos antes de mirar resultados; los datos se dividen en 3 bloques (se explora en el primero, se confirma en los otros dos sin retocar); se cuenta cada prueba; el dato final es el diario forward.
 - **Qué sale:** una tabla de frecuencia (fase 0, sin mirar resultados) y, después, qué patrones se sostienen y cuáles no. "Ninguno se sostiene" es un resultado válido.
@@ -65,12 +65,21 @@ Indicadores (valores estándar, sección 4): RSI de Wilder, ADX de Wilder, Bolli
 | H1 | RSI < 30 + FVG alcista vigente, sin rellenar y tocado + vela de rechazo (+ filtro opcional: estructura mayor alineada) |
 | H2 | ADX < 20 + `low` ≤ banda inferior de Bollinger y cierre por encima de ella + FVG alcista vigente, sin rellenar y tocado + volumen alto |
 | H3 | Barrida de liquidez + volumen alto + cierre en la zona de Fibonacci + FVG alcista vigente y sin rellenar |
+| H4 | Compresión y expansión: ancho de Bollinger en el percentil ≤ 20 de sus últimas 100 velas durante al menos 6 velas consecutivas, y la vela de señal **cierra por encima del máximo** de esas velas de compresión con volumen alto |
+| H5 | Cambio de estructura tras una barrida: barrida de liquidez en la vela S; la señal es la primera vela, dentro de las 12 siguientes a S, que **cierra por encima del último pivote máximo confirmado antes de S**, sin que ninguna vela entre S y ella haya hecho un `low` menor al de S |
 
-Versiones evaluadas por hipótesis (para ver qué aporta cada filtro): completa, y completa **sin** cada filtro (H1: sin rechazo / sin estructura mayor / sin FVG; H2: sin ADX / sin volumen / sin FVG; H3: sin volumen / sin Fibonacci / sin FVG). H1 evalúa además la versión con el filtro de estructura mayor.
+Ancho de Bollinger = (banda superior − banda inferior) / SMA(20). En H4 y H5 el evento es la vela de ruptura, no la de compresión ni la de barrida. En H4 la compresión se mide con las velas **previas** a la señal. El short es el espejo (cierre por debajo del mínimo de la compresión; cierre por debajo del último pivote mínimo confirmado antes de S, sin `high` mayor al de S).
+
+Versiones evaluadas por hipótesis (para ver qué aporta cada filtro):
+- **H1:** completa (sin estructura mayor), con estructura mayor alineada, sin rechazo, sin FVG.
+- **H2:** completa, sin ADX, sin volumen, sin FVG.
+- **H3:** completa, sin volumen, sin Fibonacci, sin FVG.
+- **H4:** completa, sin volumen, con compresión de solo 1 vela (sin la duración mínima).
+- **H5:** base (barrida + ruptura), base + volumen alto en la barrida, base + FVG alcista formado durante la ruptura, base + ambos.
 
 ## 4. Valores fijos (no se ajustan)
 
-RSI 14 (sobrevendido < 30, sobrecomprado > 70) · ADX 14 (lateral < 20) · Bollinger 20 periodos, 2 desviaciones · ATR 14 · volumen alto ≥ 1,5× media 20 · pivote n = 3 · FVG vigente 24 velas · deduplicación 8 velas · horizonte principal **8 velas** (sensibilidad: 4 y 16, solo descriptivas) · costo base de ida y vuelta según la sección 4 del protocolo v1 (sensibilidad con el costo bajo y alto que ese documento define).
+RSI 14 (sobrevendido < 30, sobrecomprado > 70) · ADX 14 (lateral < 20) · Bollinger 20 periodos, 2 desviaciones · ATR 14 · volumen alto ≥ 1,5× media 20 · pivote n = 3 · FVG vigente 24 velas · compresión: percentil ≤ 20 del ancho de Bollinger en 100 velas, mínimo 6 velas seguidas (H4) · ventana de ruptura 12 velas (H5) · deduplicación 8 velas · horizonte principal **8 velas** (sensibilidad: 4 y 16, solo descriptivas) · costo base de ida y vuelta según la sección 4 del protocolo v1 (sensibilidad con el costo bajo y alto que ese documento define).
 
 Una ambigüedad de una definición se resuelve **antes de la primera corrida y sin mirar resultados**, y se deja anotada en `estado.md`.
 
@@ -93,7 +102,7 @@ Por evento: retorno en el sentido de la operación desde la apertura siguiente h
 
 ## 7. Registro de pruebas
 
-`docs/estudio-eventos-registro.md`, solo agregar (nunca editar lo escrito): cada celda evaluada, en qué fase y con qué resultado, aunque no pase. El **N máximo declarado** es 3 hipótesis × 2 sentidos × 2 temporalidades × hasta 5 versiones = 60 celdas. Las pruebas previas de confluencias (V7/V8, `research_indicator_confluence_scan.py`) se anotan como contexto, sin números.
+`docs/estudio-eventos-registro.md`, solo agregar (nunca editar lo escrito): cada celda evaluada, en qué fase y con qué resultado, aunque no pase. El **N máximo declarado** es 5 hipótesis × 2 sentidos × 2 temporalidades × hasta 5 versiones = 100 celdas (las versiones reales suman 4 + 4 + 4 + 3 + 4 = 19 por sentido y temporalidad, o sea 76 celdas). **No se agregan hipótesis a esta ronda después de aprobar la spec**: una hipótesis nueva es una ronda 2 con su propio conteo, y se cuenta contra la misma corrección. Las pruebas previas de confluencias (V7/V8, `research_indicator_confluence_scan.py`) se anotan como contexto, sin números.
 
 ## Criterios de aceptación
 
