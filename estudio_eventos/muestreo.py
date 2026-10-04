@@ -13,7 +13,7 @@ def deduplicar(eventos: pd.DataFrame, ventana: int = 8) -> pd.DataFrame:
         ultimo = None
         mantener = []
         for pos in grupo["pos"].to_numpy():
-            cuenta = ultimo is None or pos - ultimo > ventana
+            cuenta = ultimo is None or pos - ultimo >= ventana
             if cuenta:
                 ultimo = pos
             mantener.append(cuenta)

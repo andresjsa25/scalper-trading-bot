@@ -20,13 +20,22 @@ def _eventos(posiciones, simbolo="BTC", tf="1h", sentido="long"):
 
 class TestDeduplicacion:
     def test_no_cuenta_otro_evento_dentro_de_las_8_velas_siguientes(self):
-        # 10 cuenta. 12 (+2) y 18 (+8) quedan bloqueados. 19 (+9) cuenta. 27 (+8 desde 19) queda bloqueado.
+        # Regla de Andres: bloquea i+1..i+7. 10 cuenta. 12 (+2) queda bloqueado. 18 (+8) cuenta.
+        # 19 (+1 desde 18) queda bloqueado. 27 (+9 desde 18) cuenta.
         res = deduplicar(_eventos([10, 12, 18, 19, 27]), ventana=8)
-        assert res["pos"].tolist() == [10, 19]
+        assert res["pos"].tolist() == [10, 18, 27]
 
     def test_evento_a_9_velas_del_anterior_si_cuenta(self):
         res = deduplicar(_eventos([50, 59]), ventana=8)
         assert res["pos"].tolist() == [50, 59]
+
+    def test_decision_andres_evento_a_i_mas_7_se_suprime(self):
+        res = deduplicar(_eventos([100, 107]), ventana=8)
+        assert res["pos"].tolist() == [100]
+
+    def test_decision_andres_evento_a_i_mas_8_cuenta(self):
+        res = deduplicar(_eventos([100, 108]), ventana=8)
+        assert res["pos"].tolist() == [100, 108]
 
     def test_el_bloqueo_es_por_simbolo_sentido_y_temporalidad(self):
         eventos = pd.concat([
