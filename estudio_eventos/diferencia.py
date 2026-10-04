@@ -117,7 +117,41 @@ def maximos_atr(df: pd.DataFrame, i: int, sentido: str) -> tuple:
     return ((entrada - minimo) / a, (maximo - entrada) / a)
 
 
-def resumen_agregado(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
+CLAVE_CELDA = ["hipotesis", "version", "tf", "sentido", "costo"]
+CONTEOS = ["n", "excluidos_dedup", "excluidos_sin_referencia", "excluidos_datos_faltantes"]
+BLOQUES_NOMBRES = ["E", "C1", "C2"]
+
+
+def _columnas_bloque(b: str) -> list:
+    return [f"n_{b}", f"diferencia_media_{b}", f"cota_inferior_{b}", f"cota_superior_{b}", f"mfe_medio_{b}", f"mae_medio_{b}"]
+
+
+def _columna_motivo(motivo: str) -> str:
+    if motivo == "dedup":
+        return "excluidos_dedup"
+    if motivo.startswith("menos de"):
+        return "excluidos_sin_referencia"
+    if motivo in ("sin vela +8", "ATR no disponible"):
+        return "excluidos_datos_faltantes"
+    raise ValueError(f"motivo de exclusion sin columna: {motivo!r}")
+
+
+def _conteos(grupo: pd.DataFrame) -> dict:
+    excluido = grupo["excluido"].astype(bool)
+    out = {"n": int((~excluido).sum()), "excluidos_dedup": 0, "excluidos_sin_referencia": 0, "excluidos_datos_faltantes": 0}
+    for motivo in grupo.loc[excluido, "motivo"]:
+        out[_columna_motivo(motivo)] += 1
+    return out
+
+
+def _media_no_excluidos(grupo: pd.DataFrame, columna: str) -> float:
+    if columna not in grupo.columns:  # filas sin la columna (p. ej. sin maximos): no hay media
+        return np.nan
+    valores = grupo.loc[~grupo["excluido"].astype(bool), columna].astype(float)
+    return float(valores.mean()) if len(valores) else np.nan
+
+
+def resumen_agregado(df: pd.DataFrame, semilla: int = 0, celdas: list | None = None) -> pd.DataFrame:
     """Una fila por celda agregada SIN simbolo: hipotesis, version, sentido, tf, bloque, costo (todos los simbolos juntos).
 
     df: filas de diferencias de varios simbolos, con columnas COLUMNAS_CELDA + 'simbolo', 'dia', 'diferencia', 'excluido' y 'motivo'.
@@ -128,7 +162,23 @@ def resumen_agregado(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
     Columnas: COLUMNAS_CELDA + n (no excluidos), excluidos_dedup, excluidos_sin_referencia, excluidos_datos_faltantes,
         diferencia_media, cota_inferior, cota_superior (bootstrap por dia, semilla fija). Invariante: n + excluidos = filas de la celda.
     """
-    raise NotImplementedError
+    if celdas is None:  # por defecto, las celdas presentes; fase 1 pasa celdas_declaradas() para las 76 (incluidas las de 0 eventos)
+        celdas = sorted(set(map(tuple, df[["hipotesis", "version", "tf", "sentido"]].drop_duplicates().to_numpy())))
+    filas = []
+    for hip, ver, tf, sen in celdas:
+        for costo in df["costo"].unique():
+            celda = df[(df["hipotesis"] == hip) & (df["version"] == ver) & (df["tf"] == tf)
+                       & (df["sentido"] == sen) & (df["costo"] == costo)]
+            fila = {"hipotesis": hip, "version": ver, "tf": tf, "sentido": sen, "costo": costo, **_conteos(celda)}
+            for b in BLOQUES_NOMBRES:
+                sub = celda[celda["bloque"] == b]
+                media, lo, hi = intervalo_diferencia(sub, semilla=semilla)
+                fila.update({f"n_{b}": int((~sub["excluido"].astype(bool)).sum()),
+                             f"diferencia_media_{b}": media, f"cota_inferior_{b}": lo, f"cota_superior_{b}": hi,
+                             f"mfe_medio_{b}": _media_no_excluidos(sub, "mfe"),
+                             f"mae_medio_{b}": _media_no_excluidos(sub, "mae")})
+            filas.append(fila)
+    return pd.DataFrame(filas, columns=CLAVE_CELDA + CONTEOS + [c for b in BLOQUES_NOMBRES for c in _columnas_bloque(b)])
 
 
 def resumen_por_simbolo(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
@@ -136,4 +186,13 @@ def resumen_por_simbolo(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
 
     Columnas: simbolo + COLUMNAS_CELDA + n, excluidos_dedup, excluidos_sin_referencia, excluidos_datos_faltantes, diferencia_media.
     """
-    raise NotImplementedError
+    claves = ["simbolo"] + COLUMNAS_CELDA
+    filas = []
+    for clave, grupo in df.groupby(claves, sort=True, dropna=False):
+        fila = dict(zip(claves, clave))
+        fila.update(_conteos(grupo))
+        fila["diferencia_media"] = _media_no_excluidos(grupo, "diferencia")
+        fila["mfe_medio"] = _media_no_excluidos(grupo, "mfe")
+        fila["mae_medio"] = _media_no_excluidos(grupo, "mae")
+        filas.append(fila)
+    return pd.DataFrame(filas, columns=claves + CONTEOS + ["diferencia_media", "mfe_medio", "mae_medio"])

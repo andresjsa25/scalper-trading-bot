@@ -1,6 +1,6 @@
 # Estado: estudio de eventos de patrones
 
-Fase actual: lista para merge (PR #10). Diferencia contra referencia al azar implementada y testeada con datos sintéticos; fases 1 y 2 NO ejecutadas. pytest: 104 pasan. Pendientes antes de fase 1: unidad de celda y alcance de exclusión (decisiones de Andrés), resumen con excluidos, sentido por argumento.
+Fase actual: resumen por celda (76 celdas, excluidos por motivo, máximos ATR y detalle por símbolo) implementado en rama `estudio-eventos-resumen`; fases 1 y 2 NO ejecutadas. pytest: 108 pasan. Pendientes antes de fase 1: ver entrada del Constructor (resumen).
 
 ## Registro
 
@@ -98,3 +98,17 @@ Fase actual: lista para merge (PR #10). Diferencia contra referencia al azar imp
 - 2026-10-04 · Publicación · PR #10 abierto contra main (rama `estudio-eventos-diferencia`, mergeable). CI: sin workflows y sin checks reportados. `tsc`/`npm test` no aplican (repo Python); se usó `python -m pytest -q` (104 pasan). Merge lo hace Andrés.
 
 - 2026-10-04 · Andrés · Decisiones antes del merge: (1) unidad de celda = hipótesis × sentido × temporalidad × bloque, con todos los símbolos juntos (las 76 de la spec); el detalle por símbolo es descriptivo, sin test. (2) la referencia excluye solo las velas de la celda, no las de todas las hipótesis. (3) solo cuentan los eventos contados. Anotado en spec (anexo) y en docstring de `diferencia.py`. Tareas para antes de fase 1, NO incluidas en PR #10: resumen sin símbolo, conteo de excluidos con motivos en el resumen, máximos a favor y en contra.
+
+- 2026-10-04 · Tester (rama `estudio-eventos-resumen`, sin commits) · Tests nuevos en `tests/test_estudio_eventos_resumen_celdas.py` (4, uno por requisito) y stubs `resumen_agregado`, `resumen_por_simbolo`, `maximos_atr` en `estudio_eventos/diferencia.py`. Resultado: 4 fallan por NotImplementedError; 104 existentes pasan. Abierto: (1) las 76 celdas de §7 son hipótesis-versión × tf × sentido, sin bloque; con bloque el resumen tiene 76 celdas × bloques presentes; el test lo asume así. (2) el resumen recibe los dedup como filas excluido=True con motivo "dedup" y mapea los motivos de `diferencias`. (3) `maximos_atr` no devuelve motivo; "datos faltantes" lo asigna el llamador.
+
+- 2026-10-04 · Constructor (rama `estudio-eventos-resumen`) · Implementado sobre los stubs del Tester. Commits: 89f644f (R1 con 76 celdas; incluye stubs), 46b44f5 (`maximos_atr` y columnas mfe/mae en `diferencias`), y el de resumen agregado + detalle por símbolo. pytest: 108 pasan, 0 fallan.
+  Cambio a tests: R1 esperaba 77 filas (76 + fila extra de C1); ahora espera 76, con los bloques como columnas. Decisión de Andrés. R2, R3 y R4 no se tocaron y pasan.
+  Decisiones aplicadas:
+  (1) Celda = hipótesis × versión × temporalidad × sentido × costo; los bloques E, C1 y C2 son columnas (`n_E`, `diferencia_media_E`, `cota_inferior_E`, `cota_superior_E`, `mfe_medio_E`, `mae_medio_E`, y lo mismo para C1 y C2). `n` y los excluidos son totales de la celda, así que n + excluidos = eventos crudos de la celda.
+  (2) Excluidos por motivo: dedup, sin referencia (menos de 20 candidatas) y datos faltantes (sin vela +8 o sin ATR).
+  (3) `resumen_agregado` tiene un parámetro opcional `celdas`. Por defecto usa las celdas presentes en el df (R2 espera 1 fila con una sola celda). Fase 1 debe pasar `celdas_declaradas()` para tener las 76 filas, incluidas las de cero eventos. Decisión del Constructor, a confirmar.
+  (4) `resumen_por_simbolo` es long: una fila por (símbolo, celda, bloque). R4 cuenta 3 filas para (BTC,E), (ETH,E) y (BTC,C1), así que el bloque va en la clave. Sin cotas ni significancia.
+  (5) `_media_no_excluidos` devuelve NaN si la columna mfe/mae no viene en el df. Las fixtures de R1 y R2 no traen esas columnas. Decisión del Constructor.
+  Ambigüedad a confirmar por Andrés: los máximos (MFE y MAE) se miden SIN costos, como pidió la tarea, mientras el retorno de la diferencia va neto de costos. Así, MFE y MAE no son comparables directamente con el retorno. Decidido por el Constructor, pendiente de confirmación de Andrés.
+  Pendiente: (i) la fase 1 debe pasar `celdas_declaradas()` a `resumen_agregado`; (ii) nada de esto se corrió sobre datos reales (E, C1, C2 no tocados); (iii) el registro `docs/estudio-eventos-registro.md` no se tocó, como pidió Andrés.
+  Ideas para el Proponente: (i) `resumen_agregado` y `resumen_por_simbolo` no tienen un llamador todavía; conviene escribir el script de fase 1 con el costo base y las dos sensibilidades; (ii) la combinación de bloque y celda en `resumen_por_simbolo` es distinta de la del agregado (long vs wide); conviene decidirlo antes de publicar tablas.
