@@ -22,6 +22,11 @@ def _solapa(alto, bajo, zona):
     return bajo <= zona[1] and alto >= zona[0]
 
 
+def _entra(alto, bajo, zona):
+    """Toque estricto: la vela cruza el interior de la zona; tocar solo el borde no cuenta."""
+    return bajo < zona[1] and alto > zona[0]
+
+
 def fvg_en(df: pd.DataFrame, i: int, direccion: str, ventana: int = 24, tocado: bool = True):
     """Zona (bajo, alto) del FVG vigente en i (formado en la ventana), sin rellenar por velas previas a i y tocado por la vela i; None si no hay.
 
@@ -43,7 +48,7 @@ def fvg_en(df: pd.DataFrame, i: int, direccion: str, ventana: int = 24, tocado: 
             zona = (alto[j], bajo[j - 2])
         if any(_solapa(alto[k], bajo[k], zona) for k in range(j + 1, i)):
             continue
-        if tocado and not _solapa(alto[i], bajo[i], zona):
+        if tocado and not _entra(alto[i], bajo[i], zona):
             continue
         return zona
     return None

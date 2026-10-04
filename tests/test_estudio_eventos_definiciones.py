@@ -88,6 +88,10 @@ class TestFvg:
         assert fvg_en(_fvg_con(ARRIBA), 3, "long") is None
         assert fvg_en(_fvg_con(TOCA), 3, "long") == (100.5, 101.0)
 
+    def test_fvg_toque_solo_en_el_borde_no_cuenta(self):
+        borde = (102.0, 102.5, 101.0, 101.5)  # low = borde superior de la zona (101.0): no entra
+        assert fvg_en(_fvg_con(borde), 3, "long") is None
+
     def test_fvg_bajista_espejo_de_formacion_y_zona(self):
         df = invertir(_fvg_con(ARRIBA, TOCA))
         assert formacion_fvg(df, "short").tolist() == [False, False, True, False, False]
