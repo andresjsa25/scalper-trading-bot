@@ -1,6 +1,6 @@
 # Estado: estudio de eventos de patrones
 
-Fase actual: fase 0 construida (Constructor). Fases 1 y 2 NO ejecutadas. pytest: 86 pasan, 1 falla (`TestH2::test_version_sin_fvg`, fixture inconsistente con la spec, ver registro del Constructor). Pendiente: revisión del Tester del fixture y OK de Andrés sobre la salida de fase 0.
+Fase actual: fase 0 construida; revisión vuelta 1 con cambios necesarios (ver registro). Fases 1 y 2 NO ejecutadas. pytest: 87 pasan (fixture de `TestH2::test_version_sin_fvg` corregido en 8038277). Pendiente: decisión de Andrés sobre ambigüedades abiertas y sobre la salida de fase 0.
 
 ## Registro
 
@@ -36,3 +36,5 @@ Fase actual: fase 0 construida (Constructor). Fases 1 y 2 NO ejecutadas. pytest:
 - 2026-10-04 · Constructor · Fase 0 ejecutada con `python -m estudio_eventos.fase0` (solo conteos; 1 min 51 s). Universo principal: ADA, BNB, BTC, ETH, HYPE, LINK, SOL, XAUT. Secundario: NC* (solo C1 y C2). Salida: `docs/estudio-eventos-frecuencia.md` y `docs/estudio-eventos-registro.md` (76 celdas). Celdas con E < 30 marcadas "no evaluable". Sin listados crudos, sin columnas de resultado.
 
 - Ideas para el Proponente (no implementadas): (i) la lista de ambiguedades ABIERTAS (3, 4 y la regla de pivote barrido una vez) necesita decision antes de la fase 1; (ii) H1 completa y H2/H3 completas dan muy pocos eventos en E (1, 11 y 3 en 1h): con el filtro FVG de la spec casi todas las celdas quedan no evaluables; conviene decidirlo antes de correr la fase 1, sin cambiar las definiciones sobre resultados.
+
+- 2026-10-04 · Revisor (vuelta 1) · Veredicto: Cambios necesarios. Verificado sin hallazgos: no se tocan `run_live_trading.py`, `src/`, `data/`, `docs/protocolo-variantes.md` ni el protocolo v1; fase 0 solo tiene conteos; no hay salidas de fases 1 ni 2; no hay listados crudos. Altos: (1) fase 0 corrida con ambigüedades abiertas (3) y (4), y con la regla nueva de barrida única sin decisión de Andrés (`hipotesis.py`); si Andrés cambia alguna, corregir, volver a correr fase 0 y registrar como corrección fechada. (2) referencia al azar sin filtro por sentido, criterio 4 incumplido (`muestreo.py`). Medios: Tabla 2 de frecuencia no cubre hipótesis, versión, temporalidad y sentido por mes (`fase0.py`). Bajos: este estado (corregido arriba); `docs/memoria.md` no creado (no pedido); el registro de ideas del Constructor marca como "decidido" puntos que son de Andrés.
