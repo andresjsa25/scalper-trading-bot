@@ -117,13 +117,17 @@ def maximos_atr(df: pd.DataFrame, i: int, sentido: str) -> tuple:
     return ((entrada - minimo) / a, (maximo - entrada) / a)
 
 
-CLAVE_CELDA = ["hipotesis", "version", "tf", "sentido", "costo"]
+COSTO_BASE = 0.0011  # decide el resultado (decision de Andres)
+COSTOS_SENSIBILIDAD = {"sens0008": 0.0008, "sens0014": 0.0014}  # solo lectura
+CLAVE_CELDA = ["hipotesis", "version", "tf", "sentido"]
 CONTEOS = ["n", "excluidos_dedup", "excluidos_sin_referencia", "excluidos_datos_faltantes"]
 BLOQUES_NOMBRES = ["E", "C1", "C2"]
 
 
 def _columnas_bloque(b: str) -> list:
-    return [f"n_{b}", f"diferencia_media_{b}", f"cota_inferior_{b}", f"cota_superior_{b}", f"mfe_medio_{b}", f"mae_medio_{b}"]
+    stats = ["diferencia_media", "cota_inferior", "cota_superior"]
+    tags = ["base", *COSTOS_SENSIBILIDAD]
+    return [f"n_{b}", f"mfe_medio_{b}", f"mae_medio_{b}"] + [f"{s}_{b}_{t}" for t in tags for s in stats]
 
 
 def _columna_motivo(motivo: str) -> str:
@@ -159,25 +163,29 @@ def resumen_agregado(df: pd.DataFrame, semilla: int = 0, celdas: list | None = N
     Motivos de exclusion (motivo de diferencias -> columna): "dedup" -> excluidos_dedup;
         "menos de 20 candidatas validas" -> excluidos_sin_referencia;
         "sin vela +8" y "ATR no disponible" -> excluidos_datos_faltantes.
-    Columnas: COLUMNAS_CELDA + n (no excluidos), excluidos_dedup, excluidos_sin_referencia, excluidos_datos_faltantes,
-        diferencia_media, cota_inferior, cota_superior (bootstrap por dia, semilla fija). Invariante: n + excluidos = filas de la celda.
+    Una fila por celda (76 con celdas_declaradas()); el costo no multiplica filas. Columnas por bloque (E, C1, C2):
+        n, mfe_medio, mae_medio (de las filas de costo base; no dependen del costo) y, para el costo base (*_base_*, la que decide)
+        y las sensibilidades (*_sens0008_*, *_sens0014_*, solo lectura): diferencia_media, cota_inferior, cota_superior
+        (bootstrap por dia, semilla fija). Conteos (n, excluidos_*) de las filas de costo base: n + excluidos = filas de la celda.
     """
     if celdas is None:  # por defecto, las celdas presentes; fase 1 pasa celdas_declaradas() para las 76 (incluidas las de 0 eventos)
         celdas = sorted(set(map(tuple, df[["hipotesis", "version", "tf", "sentido"]].drop_duplicates().to_numpy())))
     filas = []
     for hip, ver, tf, sen in celdas:
-        for costo in df["costo"].unique():
-            celda = df[(df["hipotesis"] == hip) & (df["version"] == ver) & (df["tf"] == tf)
-                       & (df["sentido"] == sen) & (df["costo"] == costo)]
-            fila = {"hipotesis": hip, "version": ver, "tf": tf, "sentido": sen, "costo": costo, **_conteos(celda)}
-            for b in BLOQUES_NOMBRES:
-                sub = celda[celda["bloque"] == b]
-                media, lo, hi = intervalo_diferencia(sub, semilla=semilla)
-                fila.update({f"n_{b}": int((~sub["excluido"].astype(bool)).sum()),
-                             f"diferencia_media_{b}": media, f"cota_inferior_{b}": lo, f"cota_superior_{b}": hi,
-                             f"mfe_medio_{b}": _media_no_excluidos(sub, "mfe"),
-                             f"mae_medio_{b}": _media_no_excluidos(sub, "mae")})
-            filas.append(fila)
+        celda = df[(df["hipotesis"] == hip) & (df["version"] == ver) & (df["tf"] == tf) & (df["sentido"] == sen)]
+        base = celda[np.isclose(celda["costo"].astype(float), COSTO_BASE)]
+        fila = {"hipotesis": hip, "version": ver, "tf": tf, "sentido": sen, **_conteos(base)}
+        for b in BLOQUES_NOMBRES:
+            sub = base[base["bloque"] == b]
+            fila.update({f"n_{b}": int((~sub["excluido"].astype(bool)).sum()),
+                         f"mfe_medio_{b}": _media_no_excluidos(sub, "mfe"),
+                         f"mae_medio_{b}": _media_no_excluidos(sub, "mae")})
+            for tag, costo in [("base", COSTO_BASE), *COSTOS_SENSIBILIDAD.items()]:
+                sub_costo = celda[(celda["bloque"] == b) & np.isclose(celda["costo"].astype(float), costo)]
+                media, lo, hi = intervalo_diferencia(sub_costo, semilla=semilla)
+                fila.update({f"diferencia_media_{b}_{tag}": media, f"cota_inferior_{b}_{tag}": lo,
+                             f"cota_superior_{b}_{tag}": hi})
+        filas.append(fila)
     return pd.DataFrame(filas, columns=CLAVE_CELDA + CONTEOS + [c for b in BLOQUES_NOMBRES for c in _columnas_bloque(b)])
 
 
