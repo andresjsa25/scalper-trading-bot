@@ -9,8 +9,8 @@ from estudio_eventos.muestreo import bootstrap_dia, referencia_azar
 HORIZONTE = 8
 
 
-def _retornos(df: pd.DataFrame, sentido: str, costo: float) -> np.ndarray:
-    """ret_atr de cada posicion i; NaN si falta la vela i+1, la i+8 o el ATR."""
+def _retornos(df: pd.DataFrame, sentido: str, costo: float, atr_serie: pd.Series | None = None) -> np.ndarray:
+    """ret_atr de cada posicion i; NaN si falta la vela i+1, la i+8 o el ATR. atr_serie: ATR14 ya calculado (si no, se calcula)."""
     s = 1.0 if sentido == "long" else -1.0
     n = len(df)
     opens = df["open"].to_numpy(dtype=float)
@@ -20,7 +20,8 @@ def _retornos(df: pd.DataFrame, sentido: str, costo: float) -> np.ndarray:
     salida = np.full(n, np.nan)
     salida[: n - HORIZONTE] = closes[HORIZONTE:]
     with np.errstate(invalid="ignore", divide="ignore"):
-        return (s * (salida - entrada) - costo * entrada) / atr(df).to_numpy(dtype=float)
+        a = atr(df) if atr_serie is None else atr_serie
+        return (s * (salida - entrada) - costo * entrada) / a.to_numpy(dtype=float)
 
 
 def retorno_atr(df: pd.DataFrame, i: int, sentido: str, costo: float) -> float:
@@ -49,14 +50,15 @@ def diferencias(df: pd.DataFrame, eventos: pd.DataFrame, costo: float, semilla: 
     Un evento excluido (sin vela +8, o con menos de n candidatas validas) queda en el resultado con excluido=True.
     """
     n_velas = len(df)
+    atr14 = atr(df)  # una vez por df: _retornos y maximos_atr lo reciben
     posiciones = eventos["pos"].to_numpy(dtype=int)
     marcadas = np.zeros(n_velas, dtype=bool)
     marcadas[posiciones] = True  # velas con evento: no son candidatas
     filas = []
     for pos, sentido in zip(posiciones, eventos["sentido"].to_numpy()):
-        ret = _retornos(df, sentido, costo)
+        ret = _retornos(df, sentido, costo, atr14)
         candidatas_excluidas = marcadas | ~np.isfinite(ret)
-        mfe, mae = maximos_atr(df, int(pos), sentido)
+        mfe, mae = maximos_atr(df, int(pos), sentido, atr14)
         fila = {"pos": int(pos), "sentido": sentido, "dia": df.index[pos].strftime("%Y-%m-%d"),
                 "diferencia": np.nan, "excluido": False, "motivo": "", "mfe": mfe, "mae": mae}
         if pos + HORIZONTE >= n_velas:
@@ -98,7 +100,7 @@ def resumen_celdas(df: pd.DataFrame, semilla: int = 0) -> pd.DataFrame:
     return pd.DataFrame(filas, columns=COLUMNAS_CELDA + ["n", "diferencia_media", "cota_inferior", "cota_superior"])
 
 
-def maximos_atr(df: pd.DataFrame, i: int, sentido: str) -> tuple:
+def maximos_atr(df: pd.DataFrame, i: int, sentido: str, atr_serie: pd.Series | None = None) -> tuple:
     """(mfe, mae) descriptivos en unidades de ATR14[i], horizonte i+1..i+8, sin costos, entrada = open[i+1].
 
     long:  mfe = (max(high[i+1..i+8]) - open[i+1]) / ATR14[i];  mae = (open[i+1] - min(low[i+1..i+8])) / ATR14[i]
@@ -107,7 +109,7 @@ def maximos_atr(df: pd.DataFrame, i: int, sentido: str) -> tuple:
     """
     if i + HORIZONTE >= len(df):
         return (np.nan, np.nan)
-    a = float(atr(df).iloc[i])
+    a = float((atr(df) if atr_serie is None else atr_serie).iloc[i])
     if not np.isfinite(a) or a <= 0:
         return (np.nan, np.nan)
     entrada = float(df["open"].iloc[i + 1])
