@@ -121,7 +121,7 @@ def escribir_fase1(tabla: pd.DataFrame, aprobada_por: str, fecha: str) -> None:
         "# Estudio de eventos: fase 1 (exploracion, bloque E)",
         "",
         f"Generado el {fecha} con `python -m estudio_eventos.fase1`. Aprobada por: {aprobada_por}.",
-        "Universo principal (cripto, HYPE, XAUT, SOL) juntos dentro de cada celda. NC* no entra.",
+        "Universo principal (8 simbolos: ADA, BNB, BTC, ETH, HYPE, LINK, SOL, XAUT) juntos dentro de cada celda. NC* no entra.",
         "Criterio: pasa si n_E >= 30 y cota inferior 95 % del costo base > 0. Sensibilidades solo de lectura.",
         "",
         markdown(tabla),
@@ -143,6 +143,8 @@ def agregar_registro(tabla: pd.DataFrame, aprobada_por: str, fecha: str) -> None
 
 
 def ejecutar(aprobada_por: str, fecha: str) -> pd.DataFrame:
+    if os.path.exists(os.path.join(DOCS, "estudio-eventos-fase1.md")):
+        raise SystemExit("Fase 1 ya corrida: docs/estudio-eventos-fase1.md existe. El bloque E se explora una sola vez; no se vuelve a correr.")
     velas = {s: (cargar(s, "1h"), cargar(s, "4h")) for s in PRINCIPAL}
     dif, crudos = calcular(velas)
     resumen = resumen_agregado(dif, universo=PRINCIPAL)

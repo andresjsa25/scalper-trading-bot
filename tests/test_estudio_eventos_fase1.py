@@ -55,6 +55,16 @@ def test_plan_sin_flag_no_escribe_ni_lee_datos(tmp_path, monkeypatch, capsys):
     assert os.listdir(tmp_path) == []
 
 
+def test_si_la_fase1_ya_corrio_se_niega_antes_de_leer_datos(tmp_path, monkeypatch):
+    """Si docs/estudio-eventos-fase1.md ya existe, ejecutar() falla con error claro y no lee datos."""
+    monkeypatch.setattr(fase1, "DOCS", str(tmp_path))
+    (tmp_path / "estudio-eventos-fase1.md").write_text("previa", encoding="utf-8")
+    monkeypatch.setattr(fase1, "cargar", lambda *a, **k: (_ for _ in ()).throw(AssertionError("no leer")))
+    with pytest.raises(SystemExit, match="ya corrida"):
+        fase1.ejecutar("Andres", "2026-10-04")
+    assert (tmp_path / "estudio-eventos-fase1.md").read_text(encoding="utf-8") == "previa"
+
+
 def test_flag_sin_aprobador_falla_antes_de_leer_datos(tmp_path, monkeypatch):
     """Con el flag pero sin --aprobada-por, el script sale con error y no toca datos ni docs."""
     monkeypatch.setattr(fase1, "DOCS", str(tmp_path))
