@@ -141,3 +141,5 @@ Fase actual: lista para revisar (script de fase 1 en PR apilado, NO ejecutado). 
 - 2026-10-04 · Publicación · PR #12 abierto (rama `estudio-eventos-fase1`), base `main` porque PR #11 ya estaba mergeado. Estado: lista para revisar; script de fase 1 NO ejecutado. CI: sin workflows. Revisa Andrés.
 
 - 2026-10-04 · Constructor (ajuste fase 1) · Si `docs/estudio-eventos-fase1.md` ya existe, `ejecutar()` falla con error claro antes de leer datos (el bloque E se explora una sola vez). Test agregado. Docstring y texto del reporte: universo principal son 8 símbolos (ADA, BNB, BTC, ETH, HYPE, LINK, SOL, XAUT). pytest: 123 pasan. Script NO ejecutado.
+
+- 2026-10-05 · Andrés (aprobación explícita) · Fase 1 CORRIDA con `python -m estudio_eventos.fase1 --ejecutar-fase1 --aprobada-por Andres`. Chequeo n + excluidos = crudos: pasó (sin error). Conteo por celda (76): pasa 0, no pasa 39, no evaluable 37. Salidas: `docs/estudio-eventos-fase1.md` y sección nueva en `docs/estudio-eventos-registro.md` (solo agregada, 81 líneas). Fase 2 NO ejecutada; sin interpretación de resultados en esta entrada.
