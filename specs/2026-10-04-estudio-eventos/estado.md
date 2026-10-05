@@ -1,6 +1,6 @@
 # Estado: estudio de eventos de patrones
 
-Fase actual: lista para revisar (script de fase 1 en PR apilado, NO ejecutado). Fases 1 y 2 sin correr; requieren OK de Andrés (--aprobada-por). pytest: 122 pasan.
+Fase actual: estudio CERRADO el 2026-10-05. Fase 1 corrida (0 pasan, 39 no pasan, 37 no evaluables); fase 2 no ejecutada. pytest: 123 pasan.
 
 ## Registro
 
@@ -143,3 +143,5 @@ Fase actual: lista para revisar (script de fase 1 en PR apilado, NO ejecutado). 
 - 2026-10-04 · Constructor (ajuste fase 1) · Si `docs/estudio-eventos-fase1.md` ya existe, `ejecutar()` falla con error claro antes de leer datos (el bloque E se explora una sola vez). Test agregado. Docstring y texto del reporte: universo principal son 8 símbolos (ADA, BNB, BTC, ETH, HYPE, LINK, SOL, XAUT). pytest: 123 pasan. Script NO ejecutado.
 
 - 2026-10-05 · Andrés (aprobación explícita) · Fase 1 CORRIDA con `python -m estudio_eventos.fase1 --ejecutar-fase1 --aprobada-por Andres`. Chequeo n + excluidos = crudos: pasó (sin error). Conteo por celda (76): pasa 0, no pasa 39, no evaluable 37. Salidas: `docs/estudio-eventos-fase1.md` y sección nueva en `docs/estudio-eventos-registro.md` (solo agregada, 81 líneas). Fase 2 NO ejecutada; sin interpretación de resultados en esta entrada.
+
+- 2026-10-05 · Cierre formal · Estudio CERRADO con el resultado de la fase 1 (bloque E, 76 celdas): 0 pasan, 39 no pasan, 37 no evaluables. C1 y C2 sin tocar. Fase 2 NO ejecutada. No se reabre el bloque ni se suman hipótesis para rescatar el resultado; una ronda nueva exige idea nueva y tope de celdas declarado antes de mirar datos. Lección en `docs/memoria.md`. Sin cambios de código ni datos.
