@@ -417,3 +417,84 @@ Cambios respecto de la corrección (2) (valor anterior → nuevo; celdas que no 
 - H5 / base_fvg_ruptura / 1h / short: prin_C1 270→271
 - H5 / base_volumen_barrida / 1h / short: prin_C1 176→177
 - H5 / base_volumen_barrida / 4h / long: prin_C1 39→40
+
+## Fase 1 (2026-10-05, aprobada por Andres)
+
+| fecha | fase | hipotesis | version | tf | sentido | n_E | cota_inf_E_base | resultado |
+|---|---|---|---|---|---|---|---|---|
+| 2026-10-05 | 1 (exploracion E) | H1 | completa | 1h | long | 1 | 0.8768514914566723 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H1 | completa | 1h | short | 1 | -0.011973628080631349 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H1 | completa | 4h | long | 1 | -2.7346580363175947 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H1 | completa | 4h | short | 1 | -1.0471517778922197 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H1 | con_estructura_mayor | 1h | long | 1 | 0.8768514914566723 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H1 | con_estructura_mayor | 1h | short | 0 | nan | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H1 | con_estructura_mayor | 4h | long | 0 | nan | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H1 | con_estructura_mayor | 4h | short | 0 | nan | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H1 | sin_fvg | 1h | long | 143 | -1.0306744418942126 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H1 | sin_fvg | 1h | short | 172 | -0.8499714450438388 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H1 | sin_fvg | 4h | long | 40 | -0.5544425219581 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H1 | sin_fvg | 4h | short | 58 | -1.4025032383435045 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H1 | sin_rechazo | 1h | long | 13 | -1.4372918688372245 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H1 | sin_rechazo | 1h | short | 18 | -3.133479195767632 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H1 | sin_rechazo | 4h | long | 2 | -2.7346580363175947 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H1 | sin_rechazo | 4h | short | 3 | -1.0471517778922197 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H2 | completa | 1h | long | 11 | -0.5175391524199624 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H2 | completa | 1h | short | 15 | -1.0557451819549493 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H2 | completa | 4h | long | 2 | 0.0462648777542245 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H2 | completa | 4h | short | 2 | -6.914648024178336 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H2 | sin_adx | 1h | long | 45 | -0.42079817638143563 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H2 | sin_adx | 1h | short | 37 | -0.8030326650247664 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H2 | sin_adx | 4h | long | 9 | 0.14795010286659616 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H2 | sin_adx | 4h | short | 6 | -3.0833048127139335 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H2 | sin_fvg | 1h | long | 190 | -0.03230830048173152 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H2 | sin_fvg | 1h | short | 206 | -0.29997582358621144 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H2 | sin_fvg | 4h | long | 44 | -0.6926973338529507 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H2 | sin_fvg | 4h | short | 37 | -1.4617278502574822 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H2 | sin_volumen | 1h | long | 31 | -0.35604843255172725 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H2 | sin_volumen | 1h | short | 32 | -0.9957175680096875 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H2 | sin_volumen | 4h | long | 5 | 0.05283101725102113 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H2 | sin_volumen | 4h | short | 10 | -2.530940192069477 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | completa | 1h | long | 3 | -5.177241786621276 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | completa | 1h | short | 3 | -5.523884996305164 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | completa | 4h | long | 0 | nan | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | completa | 4h | short | 0 | nan | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | sin_fibonacci | 1h | long | 76 | -0.6627106994416793 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H3 | sin_fibonacci | 1h | short | 73 | -0.8162186014090764 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H3 | sin_fibonacci | 4h | long | 14 | -0.9665000617901457 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | sin_fibonacci | 4h | short | 25 | -1.1018103835771693 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | sin_fvg | 1h | long | 21 | -0.45467999638921985 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | sin_fvg | 1h | short | 29 | -1.075990549760822 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | sin_fvg | 4h | long | 4 | -0.8353515299241552 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | sin_fvg | 4h | short | 9 | -1.9587792606911747 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | sin_volumen | 1h | long | 10 | -2.2776362229085305 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | sin_volumen | 1h | short | 13 | -1.7310496777583604 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | sin_volumen | 4h | long | 2 | 0.7387728188495699 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H3 | sin_volumen | 4h | short | 4 | -4.801322201756919 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H4 | completa | 1h | long | 109 | -0.5301743432065925 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H4 | completa | 1h | short | 136 | -1.2298822868317887 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H4 | completa | 4h | long | 27 | -0.6778930884455685 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H4 | completa | 4h | short | 36 | -1.3695283779691723 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H4 | compresion_1_vela | 1h | long | 215 | -0.6239349751477259 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H4 | compresion_1_vela | 1h | short | 278 | -0.4624600265129247 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H4 | compresion_1_vela | 4h | long | 49 | -0.5790084725078447 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H4 | compresion_1_vela | 4h | short | 65 | -0.783546473900195 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H4 | sin_volumen | 1h | long | 261 | -0.49425891467591937 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H4 | sin_volumen | 1h | short | 291 | -0.6285243763476716 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H4 | sin_volumen | 4h | long | 68 | -0.23830968509857428 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H4 | sin_volumen | 4h | short | 67 | -0.5125089935014537 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base | 1h | long | 353 | -0.19063494838467612 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base | 1h | short | 376 | -0.3720243484930457 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base | 4h | long | 101 | -0.4067923956147089 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base | 4h | short | 103 | -0.6003450077465954 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base_ambos | 1h | long | 72 | -0.2766305431274293 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base_ambos | 1h | short | 94 | -0.4711067475992452 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base_ambos | 4h | long | 17 | 0.07856579380337168 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H5 | base_ambos | 4h | short | 23 | -0.33747834737851845 | no evaluable |
+| 2026-10-05 | 1 (exploracion E) | H5 | base_fvg_ruptura | 1h | long | 245 | -0.22842921029343904 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base_fvg_ruptura | 1h | short | 273 | -0.3366860251671326 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base_fvg_ruptura | 4h | long | 70 | -0.34999210243953033 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base_fvg_ruptura | 4h | short | 74 | -0.3447110265296667 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base_volumen_barrida | 1h | long | 114 | -0.23625709363408434 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base_volumen_barrida | 1h | short | 140 | -0.4843920881554617 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base_volumen_barrida | 4h | long | 32 | -0.19258067062803444 | no pasa |
+| 2026-10-05 | 1 (exploracion E) | H5 | base_volumen_barrida | 4h | short | 38 | -0.8888062376097782 | no pasa |
