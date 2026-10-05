@@ -147,3 +147,5 @@ Estas decisiones prevalecen sobre el texto original de las secciones 2 y 3 donde
 - **Máximos:** MFE y MAE brutos, sin costos, en unidades de ATR(14) de la vela de señal, horizonte i+1..i+8.
 - **Exclusión de candidatas al azar:** solo las velas de la celda; y solo cuentan los eventos contados.
 - **Detalle por símbolo:** descriptivo, sin cotas ni significancia.
+
+- **Cierre 2026-10-05:** fase 1 corrida sobre E (76 celdas): 0 pasan, 39 no pasan, 37 no evaluables. C1 y C2 sin tocar; fase 2 no ejecutada. Estudio cerrado, sin reabrir (ver `estado.md`).
