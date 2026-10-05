@@ -7,7 +7,7 @@ logs/
 # Exports de BingX (historial de órdenes): datos de cuenta, nunca al repo
 *.zip
 Order_History*
-*[Oo]rder[_-][Hh]istory*
+*[Oo]rder*[Hh]istory*
 __pycache__/
 *.pyc
 .venv/
